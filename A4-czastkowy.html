@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Egzamin Ochrona Lotnictwa</title>
+<style>
+body{font-family:Arial;background:#eef;padding:20px}
+#app{background:white;padding:20px;border-radius:10px;max-width:1100px;margin:auto}
+.answer{border:1px solid #aaa;padding:10px;margin:6px;border-radius:6px;cursor:pointer}
+.answer.selected{background:#d0e6ff}
+.answer.correct{background:#b7f7b7}
+.answer.wrong{background:#f7b7b7}
+#msg{font-size:22px;margin-top:10px}
+button{padding:10px 25px;font-size:16px;margin-top:15px}
+</style>
+</head>
+<body>
+
+<div id="app">
+<h2 id="mode"></h2>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="msg"></div>
+<button onclick="check()">SPRAWDŹ</button>
+<button onclick="next()">DALEJ</button>
+</div>
+
+<script>
+const Q = [
+{q:`1. System wykrywania materiałów wybuchowych zgodnie z Rozp. 2015/1998 wysyła sygnał alarmowy w przypadku:`,a:[`A) Wykrycia materiału wybuchowego lub chemicznego;`,`B) Wykrycia przedmiotu zapobiegającego wykryciu materiału wybuchowego lub chemicznego;`,`C) W przypadku, gdy zawartość bagażu lub przesyłki ma zbyt dużą gęstość, aby mogła być skontrolowana;`,`D) Braku wykrycia przedmiotu zabronionego .`],c:[0,1,2]},
+{q:`2. Urządzenie do wykrywania metalu określone jest skrótem:`,a:[`A) MED;`,`B) WTMD;`,`C) MDE;`,`D) MDA`],c:[2]},
+{q:`3. Czasowa przepustka samochodowa zgodnie z Rozp. 2015/1998 i KPOLC Zawiera następujące dane:`,a:[`A) Numer przepustki;`,`B) Zabezpieczenie przed podrobienie lub przerobieniem;`,`C) Numer bramy;`,`D) Strefy, których dotyczy pozwolenie na dostęp pojazdu`],c:[1,3]},
+{q:`4. Jednorazowa przepustka samochodowa zgodnie z Rozp.2015/1998 i KPOLC Zawiera następujące dane:`,a:[`A) Nazwę organu wydającego lub portu lotniczego;`,`B) Napisy „GOŚĆ” i „VISITOR”;`,`C) Datę ważności;`,`D) Kod dostępu`],c:[1,2]},
+{q:`5. System wykrywania materiałów wybuchowych zgodnie z Rozp. 2015/1998 Wykrywa materiały wybuchowe nie zależnie od ich:`,a:[`A) Kształtu;`,`B) Położenia;`,`C) Usytuowania ;`,`D) Kształtu położenia i usytuowania`],c:[0,1,2,3]},
+{q:`6. Do upoważnień uprawniających osobę do dostępu do strefy zastrzeżonej lotniska zaliczamy:`,a:[`A) Ważną kartę pokładową lub jej odpowiednik;`,`B) Ważną przepustkę lotniskową;`,`C) Ważną kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy;`,`D) Ważną kartę identyfikacyjną portu lotniczego`],c:[0,2,3]},
+{q:`7. Bramka do wykrywania metali:`,a:[`A) Jest przymocowana na stałe do twardego podłoża;`,`B) Wykrywa każdy przedmiot zabroniony niezależnie od jego położenia i usytuowania ;`,`C) Posiada wskaźnik wizualny sygnalizujący że urządzenie działa ;`,`D) Nie musi być przymocowana do podłoża .`],c:[0,2]},
+{q:`8. Przez kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy rozumie się:`,a:[`A) Legitymację służbową żołnierzy SWW;`,`B) Legitymacją służbową żołnierzy  SKW;`,`C) Legitymacją służbową żołnierzy  ŻW;`,`D) Legitymację służbową funkcjonariuszy CBA`],c:[0,1,2,3]},
+{q:`9. Projekcja wirtualnych obrazów zagrożeń oznaczona jest skrótem:`,a:[`A) TIP;`,`B) TPI;`,`C) TFI;`,`D) PIT`],c:[0]},
+{q:`10.Kontrola dostępu obejmuje:`,a:[`A) Środki, dzięki którym można zapobiec przedostaniu się nieupoważnionych osób ;`,`B) Środki, dzięki którym można zapobiec przedostaniu się nieupoważnionych pojazdów;`,`C) Sprawdzenie danych zawartych na karcie identyfikacyjnej pracownika portu lotniczego ;`,`D) środki, dzięki którym można zidentyfikować lub wykryć przedmioty zabronione;`],c:[0,1,2]},
+{q:`11. Ręczny wykrywacz metali zgodnie z Rozp. 2015/1998:`,a:[`A) Wykrywa przedmioty metalowe żelazne i nieżelazne ;`,`B) Wysyła sygnał dźwiękowy w przypadku wykrycia przedmiotów metalowych ;`,`C) Posiada wskaźnik wizualny sygnalizujący że urządzenie działa;`,`D) Elementy służące do regulowania ustawień HHMD są zabezpieczone`],c:[0,1,2,3]},
+{q:`12. Urządzenie do wykrywania metali  (MDE) służy do kontroli bezpieczeństwa:`,a:[`A) Ładunku;`,`B) Osób ;`,`C) Bagażu kabinowego ;`,`D) Przesyłek pocztowych ;`],c:[0,3]},
+{q:`13. Urządzenie do prześwietlania osób służy do kontroli bezpieczeństwa :`,a:[`A) Pasażerów ;`,`B) Osób niebędących pasażerami ;`,`C) Bagażu kabinowego ;`,`D) Przedmiotów przenoszonych przez osoby niebędące pasażerami ;`],c:[0,1]},
+{q:`14. Oprogramowanie do zautomatyzowanego wykrywania przedmiotów zabronionych jest określone skrótem :`,a:[`A) ADP;`,`B) EDS;`,`C) APID;`,`D) APIT`],c:[2]},
+{q:`15. Do funkcji wzmacniania obrazu na urządzeniu rentgenowskim zgodnie z przepisami zaliczamy :`,a:[`A) Wzmacnianie krawędzi ;`,`B) Zdolność co najmniej dwukrotnego zbliżenia do wolnej części obrazu ;`,`C) Rozróżnianie substancji organicznych i nieorganicznych ;`,`D) Wizualne prezentowanie materiałów, do których promienie rentgenowskie nie mogą przeniknąć`],c:[0,1,2,3]},
+{q:`16. Do obszarów ustanawianych w porcie lotniczym zgodnie z Rozp. 300/2008 zaliczamy:`,a:[`A) Strefę ogólnodostępną ;`,`B) Strefę operacyjną lotniska ;`,`C) Strefę ograniczoną ;`,`D) Części krytyczne`],c:[0,1]},
+{q:`17. Do upoważnień uprawniających osobę do dostępu do strefy zastrzeżonej lotniska zaliczamy :`,a:[`A) Ważną kartę pokładową lub jej odpowiednik ;`,`B) Ważną przepustkę członka załogi ;`,`C) Ważną kartę identyfikacyjną właściwego podmiotu ;`,`D) Ważną kartę identyfikacyjną portu lotniczego ;`],c:[0,3]},
+{q:`18. Skrót EVD Oznacza urządzenie do wykrywania :`,a:[`A) Oparów materiałów wybuchowych ;`,`B) Cząstek stałych materiałów wybuchowych ;`,`C) Płynnych materiałów wybuchowych w butach ;`,`D) Plastycznych materiałów wybuchowych`],c:[0]},
+{q:`19. Na karcie identyfikacyjnej członka załogi zgodnie z Rozp 2015/1998 znajduje się:`,a:[`A) Oznaczenie stref dostępu ;`,`B) Nazwa przewoźnika lotniczego ;`,`C) Nazwa podmiotu wydającego ;`,`D) Nazwa portu lotniczego`],c:[1]},
+{q:`20. Na czasowej karcie identyfikacyjnej portu lotniczego zgodnie z Rozp.2015/1998 i KPOLC znajduje się:`,a:[`A) informacja o strefach do których posiadacz karty posiada dostęp;`,`B) Oznaczenie kategorii przedmiotów zabronionych;`,`C) Numer karty identyfikacyjnej;`,`D) Data wydania`],c:[0]},
+{q:`21. WTMD W przypadku wykrycia określonych przedmiotów metalowych :`,a:[`A) Wysyła sygnał optyczny;`,`B) Wysyła tylko sygnał dźwiękowy ;`,`C) Wysyła tylko sygnał optyczny;`,`D) Wysyła sygnał dźwiękowy`],c:[0,3]},
+{q:`22 Urządzenie do wykrywania śladowych ilości materiałów wybuchowych określone jest skrótem:`,a:[`A) ETD;`,`B) EDT;`,`C) DTE;`,`D) EDD.`],c:[0]},
+{q:`23. Jednorazowa karta identyfikacyjna portu lotniczego zgodnie z KPOLC zawiera co najmniej:`,a:[`A) Nazwisko i zdjęcie posiadacza;`,`B) Oznaczenie obszarów i stref do których jej posiadacz ma dostęp;`,`C) Oznaczenie kategorii przedmiotów zabronionych;`,`D) Numer karty identyfikacyjnej`],c:[1,3]},
+{q:`24. Przez kartę identyfikacyjną właściwego organu krajowego rozumie się :`,a:[`A) Legitymację służbową urzędu lotnictwa cywilnego;`,`B) Certyfikat inspektora lotnictwa cywilnego;`,`C) Certyfikat audytora urzędu lotnictwa cywilnego;`,`D) Legitymację funkcjonariuszy służb państwowych`],c:[1]},
+{q:`25. Przez kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy rozumie się legitymacją służbową :`,a:[`A) Funkcjonariuszy Straży Granicznej ;`,`B) Inspektora urzędu lotnictwa cywilnego ;`,`C) Funkcjonariuszy służby celnej ;`,`D) Funkcjonariuszy służby więziennej`],c:[0]},
+{q:`26. Kontrola bezpieczeństwa to :`,a:[`A) Środki dzięki którym można zapobiec przedostaniu się nieupoważnionych osób;`,`B) Środki dzięki którym można zapobiec przedostaniu się nieupoważnionych pojazdów;`,`C) Środki dzięki którym można zidentyfikować lub wykryć przedmioty zabronione ;`,`D) Sprawdzeniu danych zawartych na karcie identyfikacyjnej pracownika portu lotniczego`],c:[2]},
+{q:`27. System wykrywania materiałów wybuchowych określony jest skrótem :`,a:[`A) SED;`,`B) SDE;`,`C) ESD;`,`D) EDS`],c:[3]},
+{q:`28. Systemy wykrywania płynnych materiałów wybuchowych określone są skrótem ;`,a:[`A) EDS;`,`B) LEDS;`,`C) LAGS;`,`D) LEGS`],c:[1]},
+{q:`29. Na czasowej karcie identyfikacyjnej portu lotniczego zgodnie z rozp. 2015/1998 i KPOLC dla funkcjonariuszy służb państwowych znajduje się:`,a:[`A) Oznaczenie kategorii przedmiotów zabronionych ;`,`B) Numer służbowy funkcjonariusza ;`,`C) Nazwa pracodawcy ;`,`D) Nazwa podmiotu wydającego lub portu lotniczego`],c:[1,2,3]},
+{q:`30. Urządzenie do wykrywania materiałów wybuchowych w butach określone jest skrótem :`,a:[`A) EDS;`,`B) SED;`,`C) SMD;`,`D) SDM`],c:[1]}
+];
+
+let mode="learning", pool=[...Array(30).keys()], wrong=[], i=0, selected=[], score=0;
+
+function show(){
+document.getElementById("mode").innerText=mode==="learning"?"TRYB NAUKI":"EGZAMIN";
+let q=Q[pool[i]];
+document.getElementById("question").innerText=q.q;
+let a=document.getElementById("answers"); a.innerHTML=""; selected=[];
+q.a.forEach((t,idx)=>{
+let d=document.createElement("div");
+d.className="answer";
+d.innerText=t;
+d.onclick=()=>{d.classList.toggle("selected"); selected.includes(idx)?selected=selected.filter(x=>x!=idx):selected.push(idx);};
+a.appendChild(d);
+});
+document.getElementById("msg").innerText="";
+}
+
+function check(){
+let q=Q[pool[i]];
+let ok=JSON.stringify([...selected].sort())===JSON.stringify([...q.c].sort());
+let divs=document.querySelectorAll(".answer");
+if(ok){document.getElementById("msg").innerHTML="<span style='color:green'>DOBRZE</span>"; if(mode==="exam")score++;}
+else{document.getElementById("msg").innerHTML="<span style='color:red'>ŹLE</span>"; wrong.push(pool[i]); q.c.forEach(i=>divs[i].classList.add("correct")); selected.forEach(i=>{if(!q.c.includes(i))divs[i].classList.add("wrong");});}
+}
+
+function next(){
+i++;
+if(i>=pool.length){
+if(mode==="learning"){pool=[...new Set(wrong)];wrong=[];i=0;if(pool.length==0){mode="exam";pool=[...Array(30).keys()];score=0;}}
+else{alert("WYNIK: "+score+"/30 = "+Math.round(score/30*100)+"%");return;}
+}
+show();
+}
+show();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

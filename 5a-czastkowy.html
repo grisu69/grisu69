@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test – Ochrona Lotnictwa</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    padding:10px;
+    margin:0;
+}
+#box {
+    background:#fff;
+    padding:15px;
+    max-width:100%;
+    margin:auto;
+    border-radius:10px;
+}
+.answer {
+    padding:14px;
+    border:1px solid #ccc;
+    margin:8px 0;
+    cursor:pointer;
+    border-radius:6px;
+    font-size:16px;
+}
+.answer:hover { background:#eee; }
+.selected { background:#cce5ff; }
+.good { color:green; font-weight:bold; }
+.bad { color:red; font-weight:bold; }
+button {
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    background:#007bff;
+    color:white;
+}
+button:active { background:#0056b3; }
+</style>
+</head>
+
+<body>
+<div id="box">
+<h2 id="mode"></h2>
+<h3 id="qnum"></h3>
+<div id="question"></div>
+<div id="answers"></div>
+<button onclick="check()">SPRAWDŹ</button>
+<button onclick="next()">DALEJ</button>
+<div id="result"></div>
+</div>
+
+<script>
+let MODE = "NAUKA";
+let index = 0;
+let chosen = [];
+let score = 0;
+let wrong = [];
+let checked = false;
+
+/* ===== PYTANIA – 100% ORYGINAŁ ===== */
+let questions = [
+{q:`1. Kategorie przedmiotów zabronionych do przewozu w ładunku i poczcie znajdziemy w:`,
+a:["a) Krajowym programie Ochrony Lotnictwa Cywilnego;","b) Ustawie Prawo Lotnicze;","c) Krajowym programie Kontroli Jakości;","d) Rozporządzeniu Wykonawczym Komisji (UE) 2015/1998."],
+ok:["d"]},
+
+{q:`2. Do metod kontroli bezpieczeństwa ładunku i poczty zaliczamy:`,
+a:["a) kontrolę wzrokową;","b) urządzenie rentgenowskie;","c) ręczny wykrywacz metali;","d) urządzenie do wykrywania metalu."],
+ok:["a","b","d"]},
+
+{q:`3. Lotniczy list przewozowy zawiera m.in.:`,
+a:["a) niepowtarzalny identyfikator przesyłki;","b) status ochrony przesyłki;","c) powód wydania statusu ochrony przesyłki;","d) opis zawartości przesyłki."],
+ok:["a","b","c","d"]},
+
+{q:`4. Wykaz przedmiotów zabronionych do przewozu w ładunku i poczcie określony jest w:`,
+a:["a) Dodatku 5-B Rozp. 2015/1998;","b) Rozdziale 6 pkt 6.0.2. Rozp. 2015/1998;","c) Dodatku 1-A Rozp. 2015/1998;","d) Dodatku 4-A w Decyzji 8005."],
+ok:["b"]},
+
+{q:`5. Powód wydania statusu ochrony na lotniczym liście przewozowym określamy skrótem:`,
+a:["a) KC;","b) SHR;","c) RA;","d) SPX."],
+ok:["a","c"]},
+
+{q:`6. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) proch strzelniczy;","b) dynamit;","c) rewolwer;","d) paralizator."],
+ok:["a","b"]},
+
+{q:`7. Powód wydania statusu ochrony KC oznacza:`,
+a:["a) wybrany przez zarejestrowanego agenta;","b) otrzymany od znanego nadawcy;","c) otrzymany od zarejestrowanego agenta;","d) wybrany przez znanego nadawcę."],
+ok:["b"]},
+
+{q:`8. Status ochrony przesyłki SHR oznacza:`,
+a:["a) bezpieczny tylko dla pasażerskiego SP zgodnie z wymogami wysokiego ryzyka;",
+"b) bezpieczny tylko dla pocztowego SP zgodnie z wymogami wysokiego ryzyka;",
+"c) bezpieczny tylko dla towarowego SP zgodnie z wymogami wysokiego ryzyka;",
+"d) bezpieczny dla pasażerskiego, towarowego i pocztowego statku powietrznego zgodnie z wymogami wysokiego ryzyka."],
+ok:["d"]},
+
+{q:`9. Próbki biomedyczne określane są skrótem:`,
+a:["a) BIOM;","b) BOIM;","c) BOMI;","d) MOBI."],
+ok:["a"]},
+
+{q:`10. Wykaz kategorii przedmiotów zabronionych do przewozu w ładunku i poczcie znajdziemy w:`,
+a:["a) rozdziale 6 Rozp. 2015/1998;","b) rozdziale 7 Rozp. 2015/1998;","c) rozdziale 8 Rozp. 2015/1998;","d) rozdziale 5 Rozp. 2015/1998."],
+ok:["a"]},
+
+{q:`11. Ładunek transferowy i poczta transferowa określone są jako:`,
+a:["a) TRNS;","b) TNSR;","c) TRANS;","d) TRSN."],
+ok:["a"]},
+
+{q:`12. Na podstawie oceny ryzyka właściwy organ może zezwolić na zwolnienie z kontroli bezpieczeństwa:`,
+a:["a) przesyłki pocztowe składające się tylko z przedmiotów, których indywidualny całkowity ciężar nie przekracza 2000 gram i które są przewożone lotami pocztowymi w granicach państwa członkowskiego, w celu dostarczenia pod adres w danym państwie członkowskim; oraz;",
+"b) z przyczyn obiektywnych rządową pocztę lub rządowy ładunek w przypadku których ochronę i zabezpieczenie zapewnia dane państwo członkowskie; oraz;",
+"c) ładunek i pocztę przewożonych w ramach indywidualnych jednorazowych przelotów realizowanych na zamówienie pojedynczego nadawcy;",
+"d) ładunek tranzytowy i pocztę tranzytową"],
+ok:["a","b","c"]},
+
+{q:`13. Próbki ETD pobieramy co najmniej z następujących powierzchni:`,
+a:["a) z mokrych powierzchni;","b) z wewnętrznych spojeń pojemnika, w stosownych przypadkach spod warstwy ochronnego opakowania;","c) zewnętrznych spojeń pojemnika, w stosownych przypadkach spod warstwy ochronnego opakowania;","d) z wszelkich powierzchni, które wyglądają na poddane ingerencji."],
+ok:["b","c","d"]},
+
+{q:`14. Kontrola wzrokowa jest dopuszczalna jedynie:`,
+a:["a) gdy, rzeczywiście można zobaczyć wszystkie elementy przesyłki;","b) w odniesieniu do kontroli żywych zwierząt;","c) nie można stosować podczas kontroli przesyłek zawierających ładunek i pocztę;","d) łącznie z innymi metodami."],
+ok:["a","b","d"]},
+
+{q:`15. Z kontroli bezpieczeństwa mogą zostać zwolnione przesyłki z próbkami biomedycznymi:`,
+a:["a) bez dołączonej dokumentacji;","b) posiadające odpowiednią dokumentację;","c) pochodzące z wiarygodnego źródła;","d) które mogłyby zostać uszkodzone w przypadku poddania ich kontroli bezpieczeństwa."],
+ok:["b","c","d"]},
+
+{q:`16. Powód wydania statusu ochrony RA oznacza:`,
+a:["a) otrzymany od zarejestrowanego nadawcy;","b) otrzymany od zarejestrowanego agenta;","c) wybrany przez zarejestrowanego agenta;","d) podpisany przez zarejestrowanego nadawcę."],
+ok:["c"]},
+
+{q:`17. Do podstawowych metod kontroli bezpieczeństwa bagażu kabinowego zaliczamy:`,
+a:["a) ETD;","b) RTG;","c) SED;","d) EDS."],
+ok:["b","d"]},
+
+{q:`18. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:`,
+a:["a) członkowie Państwowej Agencji Atomistyki;","b) pracownicy Państwowej Agencji Żeglugi Powietrznej;","c) żołnierze Żandarmerii Wojskowej;","d) żołnierze Służby Wywiadu."],
+ok:["c"]},
+
+{q:`19. Określenie SMUS oznacza:`,
+a:["a) poszczególne przesyłki, gdy grubość każdej z nich jest mniejsza niż 6 milimetrów, a całkowity ciężar jest mniejszy niż 250 gramów oraz przesyłki łączone składające się wyłącznie z przesyłek o takich parametrach;",
+"b) przesyłki, których całkowity ciężar jest mniejszy niż 250 mg;",
+"c) przesyłki, w przypadku których grubość pojedynczej przesyłki wynosi mniej niż 6 cm;",
+"d) ładunek transferowy i pocztę transferową."],
+ok:["a"]},
+
+{q:`20. Do metod kontroli bezpieczeństwa ładunku i poczty zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) MDE;","b) kontrolę wzrokową;","c) EDT;","d) MED."],
+ok:["a","b"]},
+
+{q:`21. Status ochronny przesyłki SPX oznacza:`,
+a:["a) niebezpieczny dla pasażerskiego, towarowego i pocztowego statku powietrznego;","b) bezpieczny tylko dla pasażerskiego i pocztowego statku powietrznego;","c) bezpieczny dla pasażerskiego, towarowego i pocztowego statku powietrznego;","d) bezpieczny tylko dla pasażerskiego i towarowego statku powietrznego."],
+ok:["c"]},
+
+{q:`22. Na podstawie oceny ryzyka właściwy organ może zezwolić na zwolnienie z kontroli bezpieczeństwa z przyczyn obiektywnych:`,
+a:["a) poczty lub ładunku,  których ochronę i zabezpieczenie zapewnia dane państwo członkowskie;",
+"b) rządowej poczty w przypadku których ochronę i zabezpieczenie zapewnia państwo członkowskie;",
+"c) rządowej poczty lub rządowego ładunku w przypadku których ochronę i zabezpieczenie zapewnia przewoźnik lotniczy;",
+"d) rządowego ładunku, w przypadku których ochronę i zabezpieczeni zapewnia dane państwo członkowskie"],
+ok:["b","d"]},
+
+{q:`23. Przedmioty zabronione w przesyłkach zawierających ładunek i pocztę to:`,
+a:["a) zmontowane urządzenia wybuchowe, które nie są przewożone zgodnie z mającymi zastosowanie zasadami bezpieczeństwa;",
+"b) zmontowane urządzenia zapalające, które nie są przewożone zgodnie z mającymi zastosowanie zasadami bezpieczeństwa;",
+"c) materiały i urządzenia wybuchowe oraz substancje i urządzenia zapalające.",
+"d) pistolety, broń palna i inne urządzenia wystrzeliwujące pociski;"],
+ok:["a","b"]},
+
+{q:`24. Urządzeń ETD nie możemy zastosować wobec:`,
+a:["a) wilgotnych powierzchni;","b) powierzchni, które są mokre","c) wszelkich powierzchni wykorzystywanych w celu ręcznego przemieszczania;","d) wszelkich powierzchni, które wyglądają na poddane ingerencji."],
+ok:["a","b"]},
+
+{q:`25. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:`,
+a:["a) funkcjonariusze Biura Ochrony Rządu przy wykonywaniu zadań związanych z ochroną;",
+"b) strażacy Państwowej Straży Pożarnej w trakcie wykonywania czynności kontrolno-rozpoznawczych na lotnisku;",
+"c) strażacy pełniący służbę lub zatrudnieni w lotniskowej służbie ratowniczo-gaśniczej;",
+"d) funkcjonariusze Centralnego Biura."],
+ok:["b","c"]},
+
+{q:`26. Status ochrony przesyłki SPX umożliwia transport:`,
+a:["a) pocztowym statkiem powietrznym","b) towarowym statkiem powietrznym;","c) pasażerskim statkiem powietrznym;","d) pasażerskim i towarowym statkiem powietrznym."],
+ok:["a","b","c","d"]},
+
+{q:`27. Odsetek od 10% do 20% pasażerów, którzy nie uruchomili alarmu przechodząc przez WTMD, poddaje się kontroli bezpieczeństwa za pomocą:`,
+a:["a) ETD+SMD;","b) urządzenia do prześwietlania osób niewykorzystującego promieniowania jonizującego;","c) kontrola manualna","d) kontrola manualna+SMD"],
+ok:["b","c"]},
+
+{q:`28. Z kontroli bezpieczeństwa mogą zostać zwolnione przesyłki z materiałami ratującymi życie:`,
+a:["a) dla których czas ma istotne znaczenie;","b) bez konieczności pochodzenia z wiarygodnego źródła;","c) z towarzyszącą odpowiednią dokumentacją;","d) pochodzące z wiarygodnego źródła."],
+ok:["a","c","d"]},
+
+{q:`29. Zastosowanie urządzenia rentgenowskiego na lotniczym liście przewozowym oznaczymy skrótem:`,
+a:["a) RXY;","b) XYR;","c) XRY;","d) PRY."],
+ok:["c"]},
+
+{q:`30. Do metod kontroli bezpieczeństwa ładunku i poczty zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) urządzenie EDS;","b) system do wykrywania urządzeń wybuchowych;","c) urządzenie do wykrywania śladowych ilości materiałów wybuchowych.","d) PWMW w połączeniu z kontrolą manualną;"],
+ok:["a","c"]},
+
+{q:`31. Metoda kontroli bezpieczeństwa przy wykorzystaniu urządzenia do wykrywania metali jest określana w dokumentacji lotniczej skrótem:`,
+a:["a) EMD;","b) MCD;","c) CDM;","d) CMD."],
+ok:["d"]},
+
+{q:`32. Metoda kontroli bezpieczeństwa przy wykorzystaniu kontroli wzrokowej określana jest skrótem:`,
+a:["a) VKC;","b) VCK;","c) KCV;","d) VSK."],
+ok:["b"]},
+
+{q:`33. Przesyłki z materiałami ratującymi życie, dla których czas ma istotne znaczenie oznaczają:`,
+a:["a) LFSM;","b) LSFM;","c) SFML;","d) LMFS."],
+ok:["a"]},
+
+{q:`34. Status ochrony przesyłki SHR umożliwia transport:`,
+a:["a) pocztowym statkiem powietrznym;","b) towarowym statkiem powietrznym;","c) pasażerskim statkiem powietrznym;","d) pasażerskim i towarowym statkiem powietrznym."],
+ok:["a","b","c","d"]},
+
+{q:`35. Przedmioty zabronione w przesyłkach zawierających ładunek i pocztę to:`,
+a:["a) zmontowane urządzenia wybuchowe;","b) zmontowane urządzenia zapalające;","c) materiały i urządzenia wybuchowe oraz substancje i urządzenia zapalające;","d) żadne z powyższych."],
+ok:["d"]},
+
+{q:`36. Do metod kontroli bezpieczeństwa ładunku i poczty zaliczamy:`,
+a:["a) kontrolę wizualną (VCK);","b) urządzenie do wykrywania oparów materiałów wybuchowych (EVD);","c) bramkę do wykrywania metalu (MDE);","d) urządzenie do wykrywania śladowych ilości materiałów wybuchowych (ETD)."],
+ok:["b","d"]},
+
+{q:`37. Do metod kontroli bezpieczeństwa ładunku i poczty zaliczamy:`,
+a:["a) kontrolę fizyczną;","b) urządzenie rentgenowskie;","c) wykrywacz metali;","d) pies do wykrywania materiałów wybuchowych."],
+ok:["b","d"]},
+
+{q:`38. Do kontroli bezpieczeństwa bagażu rejestrowanego z wykorzystaniem urządzenia ETD pobiera się próbki z:`,
+a:["a) wewnętrznej podszewki bagażu;","b) zewnętrznych kieszeni bagażu;","c) dowolnego dużego przedmiotu znajdującego się wewnątrz bagażu;","d) uchwytów bagażu."],
+ok:["a","c","d"]},
+
+{q:`39. Do dodatkowych środków kontroli bezpieczeństwa pasażerów zaliczamy:`,
+a:["a) bramkę do wykrywania metali;","b) urządzenie do wykrywania śladowych ilości materii organicznych;","c) ręczny wykrywacz metali;","d) urządzenie HHMD."],
+ok:["c","d"]},
+
+{q:`40. Zastosowanie kontroli manualnej na lotniczym liście przewozowym oznaczymy skrótem:`,
+a:["a) PHS;","b) PSH;","c) PHR;","d) VCK."],
+ok:["a"]}
+];
+
+const ALL_QUESTIONS = [...questions];
+
+function load(){
+    document.getElementById("mode").innerText =
+        MODE === "NAUKA" ? "TRYB NAUKI" : "TRYB EGZAMIN";
+
+    document.getElementById("qnum").innerText =
+        "Pytanie " + (index + 1) + " / " + questions.length;
+
+    document.getElementById("question").innerText = questions[index].q;
+
+    let html = "";
+    questions[index].a.forEach((x,i)=>{
+        html += `<div class="answer" onclick="select('${String.fromCharCode(97+i)}',this)">${x}</div>`;
+    });
+
+    document.getElementById("answers").innerHTML = html;
+    document.getElementById("result").innerHTML = "";
+    chosen = [];
+    checked = false;
+}
+
+function select(v,el){
+    if(chosen.includes(v)){
+        chosen = chosen.filter(x=>x!==v);
+        el.classList.remove("selected");
+    } else {
+        chosen.push(v);
+        el.classList.add("selected");
+    }
+}
+
+function check(){
+    if(checked) return;
+    if(!chosen.length) return alert("Zaznacz odpowiedź!");
+
+    let ok = [...questions[index].ok].sort().join("");
+    let ch = [...chosen].sort().join("");
+
+    if(MODE==="NAUKA"){
+        if(ok===ch){
+            result.innerHTML = "<span class='good'>DOBRZE</span>";
+        } else {
+            result.innerHTML =
+                "<span class='bad'>ŹLE</span><br>Prawidłowa odpowiedź: "+ok.toUpperCase();
+            wrong.push(questions[index]);
+        }
+    }
+
+    checked = true;
+}
+
+function next(){
+    if(MODE==="EGZAMIN"){
+        let ok = [...questions[index].ok].sort().join("");
+        let ch = [...chosen].sort().join("");
+        if(ok===ch) score++;
+    }
+
+    index++;
+
+    if(index >= questions.length){
+        if(MODE==="NAUKA"){
+            if(wrong.length){
+                alert("Powtarzamy błędne pytania");
+                questions = [...wrong];
+                wrong = [];
+                index = 0;
+            } else {
+                alert("START EGZAMINU");
+                MODE = "EGZAMIN";
+                questions = [...ALL_QUESTIONS].sort(()=>Math.random()-0.5);
+                index = 0;
+                score = 0;
+            }
+        } else {
+            let percent = Math.round((score / questions.length) * 100);
+            alert("WYNIK: "+score+"/"+questions.length+"\n"+percent+"%");
+            location.reload();
+        }
+    }
+
+    load();
+}
+
+load();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

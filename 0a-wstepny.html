@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egzamin – Ochrona Lotnictwa</title>
+
+<style>
+body{
+  margin:0;
+  background:#f2f4f6;
+  font-family:Arial;
+}
+#app,#summary{
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+}
+h2{font-size:22px;}
+#progress{
+  margin-bottom:15px;
+  font-weight:bold;
+  font-size:18px;
+}
+.answer{
+  padding:15px;
+  margin:10px 0;
+  background:#eee;
+  border-radius:10px;
+  font-size:18px;
+}
+.answer.sel{
+  background:#ccc;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  padding:15px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:#1976d2;
+  color:white;
+}
+.good{color:#2e7d32;font-weight:bold;}
+.bad{color:#c62828;font-weight:bold;}
+.hidden{display:none;}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+  <div id="progress"></div>
+  <h2 id="question"></h2>
+  <div id="answers"></div>
+  <div id="feedback"></div>
+  <button id="mainBtn">SPRAWDŹ</button>
+</div>
+
+<div id="summary" class="hidden"></div>
+
+<script>
+const questions = [
+{q:"1. Czasowa przepustka samochodowa zgodnie z rozporządzeniem 2015/1998 i KPOLC zawiera następujące dane:", a:["datę wydania;","bramy dostępu;","dane określonego pojazdu;","nazwę portu lotniczego;"], c:["C"]},
+{q:"2. Jednorazowa przepustka samochodowa zgodnie z Rozp. 2015/1998 i KPOLC zawiera następujące dane:", a:["nazwę portu lotniczego;","organ wydający;","strefy, których dotyczy pozwolenie na dostęp pojazdu;","oznaczenie kategorii przedmiotów zabronionych;"], c:["C"]},
+{q:"3. Do obszarów ustanawianych w porcie lotniczym zgodnie z Rozp. 2015/1998 zaliczamy:", a:["strefę operacyjną lotniska;","strefę ogólną;","części krytyczne strefy operacyjnej lotniska","strefę zastrzeżoną lotniska;"], c:["A","D"]},
+{q:"4. Do upoważnień uprawniających osobę do dostępu do strefy zastrzeżonej lotniska zaliczamy:", a:["certyfikat inspektora lotnictwa cywilnego;","ważną kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy;","ważną przepustkę lotniskową;","ważny odpowiednik karty pokładowej;"], c:["A","B","D"]},
+{q:"5. Na karcie identyfikacyjnej członka załogi zgodnie z Rozp. 2015/1998 znajduje się:", a:["oznaczenie stref dostępu;","nazwa stanowiska;","nazwa przewoźnika lotniczego;","data wydania;"], c:["C"]},
+{q:"6. Kartę identyfikacyjną portu lotniczego wydaje się jako kartę:", a:["dobową;","jednodniową;","24 godzinną;","Jednorazową;"], c:["D"]},
+{q:"7. Czasowa przepustka samochodowa zgodnie z Rozp. 2015/1998 i KPOLC zawiera następujące dane:", a:["zdjęcie pojazdu;","hologram;","data ważności badań technicznych pojazdu;","strefy, których dotyczy pozwolenie na dostęp pojazdu;"], c:["D"]},
+{q:"8. Na karcie identyfikacyjnej członka załogi zgodnie z Rozp 2015/1998 znajduje się:", a:["Oznaczenie stref dostępu;","Słowo „Crew”;","Nazwa pracodawcy;","Słowo „Załoga” i „Crew”;"], c:["B"]},
+{q:"9. Przez kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy rozumie się:", a:["Legitymację służbową funkcjonariuszy SOP;","Legitymację służbową funkcjonariuszy Służby Wywiadu;","Legitymację służbową funkcjonariuszy AW;","Legitymację służbową funkcjonariuszy ABW"], c:["A","C","D"]},
+{q:"10. Na czasowej karcie identyfikacyjnej portu lotniczego zgodnie z Rozp. 2015/1998 i KPOLC znajduje się:", a:["Zabezpieczenie przed jej przerobieniem;","Nazwa pracodawcy;","Numer karty identyfikacyjnej;","Nazwa podmiotu wydającego;"], c:["A","B","D"]},
+{q:"11. W skład służb ochrony realizujących zadania na terenie lotniska zgodnie z KPOLC zaliczamy:", a:["Policję;","FRONTEX (Europejska Agencja Straży Granicznej i Przybrzeżnej);","Agencję Bezpieczeństwa Wewnętrznego;","Straż Ochrony;"], c:["A","C"]},
+{q:"12. Na czasowej karcie identyfikacyjnej portu lotniczego zgodnie z Rozp. 2015/1998 i KPOLC znajduje się:", a:["Data ważności;","Zdjęcie osoby;","Data wydania;","Oznaczenie stref dostępu;"], c:["A","B","D"]},
+{q:"13. W skład służb ochrony realizujących zadania na terenie lotniska zgodnie z KPOLC zaliczamy:", a:["Agencję Bezpieczeństwa Wewnętrznego;","Służbę Celno-Skarbową;","Służbę ochrony lotniska;","Wewnętrzną służbę ochrony realizującą zadania na rzecz ochrony lotnictwa cywilnego i podlegającą Zarządzającemu Lotniskiem;"], c:["A","C","D"]},
+{q:"14. Na czasowej karcie identyfikacyjnej portu lotniczego dla funkcjonariuszy służb państwowych zgodnie z Rozp. 2015/1998 i KPOLC znajduje się:", a:["Numer służbowy funkcjonariusza;","Nazwisko i zdjęcie posiadacza;","Data ważności;","Oznaczenie kategorii przedmiotów zabronionych;"], c:["A","C"]},
+{q:"15. Jednorazowa karta identyfikacyjna portu lotniczego zgodnie z KPOLC zawiera co najmniej:", a:["Godzinę ważności;","Nazwę portu lotniczego;","Nazwisko i zdjęcie;","Numer karty identyfikacyjnej;"], c:["D"]},
+{q:"16. W jakich strefach członkowie załóg nieposiadający ważnych kart identyfikacyjnych są zwolnieni z eskortowania:", a:["W strefach, w których mogą przebywać pasażerowie;","W strefach, w których transportowany jest odlatujący bagaż rejestrowany;","W strefach nieprzeznaczonych dla załóg;","W strefach położonych w bezpośrednim sąsiedztwie statku powietrznego, którym załoga odleci."], c:["A","D"]},
+{q:"17. Jednorazowa karta identyfikacyjna portu lotniczego zgodnie z KPOLC zawiera co najmniej:", a:["Datę ważności;","Oznaczenie kategorii przedmiotów zabronionych;","Organ wydający;","Imię i nazwisko;"], c:["A"]},
+{q:"18. Jednorazowa przepustka samochodowa zgodnie z Rozp. 2015/1998 i KPOLC zawiera następujące dane:", a:["Nazwę organu wydającego lub portu lotniczego;","Napisy „GOŚĆ” i „VISITOR”;","Datę ważności;","Kod dostępu;"], c:["B","C"]},
+{q:"19. Przez kartę identyfikacyjną właściwego organu krajowego rozumie się:", a:["Legitymację służbową Urzędu Lotnictwa Cywilnego;","Certyfikat audytora Urzędu Lotnictwa Cywilnego;","Certyfikat inspektora lotnictwa cywilnego;","Legitymację funkcjonariuszy służb państwowych;"], c:["C"]},
+{q:"20. Przez kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy rozumie się legitymację służbową żołnierzy i funkcjonariuszy:", a:["Funkcjonariuszy Straży Granicznej;","Urzędu Lotnictwa Cywilnego;","Funkcjonariuszy Służby Celnej;","Funkcjonariuszy Służby Więziennej;"], c:["A"]},
+{q:"21. Przez kartę identyfikacyjną organu regulacyjnego uznawanego przez właściwy organ krajowy rozumie się:", a:["Legitymację służbową żołnierzy SWW;","Legitymację służbową żołnierzy SKW;","Legitymację służbową ŻW;","Legitymację służbową funkcjonariuszy CBA;"], c:["A","B","C","D"]},
+{q:"22. Osoba eskortująca zgodnie z Rozp. 2015/1998:", a:["Posiada ważną kartę identyfikacyjną właściwego organu krajowego;","Posiada ważną jednorazową kartę identyfikacyjną portu lotniczego;","Zapewnia, na ile to możliwe, aby nie doszło do naruszenia zasad ochrony przez eskortowaną osobę;","Nie musi mieć osoby przez cały czas w bezpośrednim polu widzenia;"], c:["A","C"]},
+{q:"23. Na czasowej karcie identyfikacyjnej portu lotniczego dla funkcjonariuszy służb państwowych zgodnie z Rozp. 2015/1998 i KPOLC znajduje się:", a:["Nazwa pracodawcy;","Numer karty identyfikacyjnej;","Zdjęcie posiadacza;","Nazwa portu lotniczego"], c:["A","C","D"]},
+{q:"24. Do upoważnień uprawniających osobę do dostępu do strefy zastrzeżonej lotniska zaliczamy:", a:["Ważny odpowiednik karty pokładowej;","Ważną przepustkę jednorazową;","Ważną przepustkę czasową;","Ważną kartę identyfikacyjną właściwego organu krajowego;"], c:["A","D"]},
+{q:"25. W jakich sytuacjach należy zwrócić niezwłocznie kartę identyfikacyjną:", a:["Na wniosek właściwego operatora;","Na wniosek podmiotu wydającego;","W momencie przedłużenia stosunku pracy;","W razie zmiany potrzeby dostępu do stref, w odniesieniu do których udzielono upoważnienia;"], c:["A","B","D"]},
+{q:"26. Do obszarów ustanawianych w porcie lotniczym zgodnie z Rozp. 2015/1998 zaliczamy:", a:["Strefę ograniczoną;","Halę odbioru bagażu;","Strefę zastrzeżoną;","Terminal pasażerski;"], c:["C"]},
+{q:"27. Jednorazowa karta identyfikacyjna portu lotniczego zgodnie z KPOLC zawiera co najmniej:", a:["Oznaczenie daty wraz z godziną ważności karty;","Oznaczenie przy użyciu kolorów stref, do których jej posiadacz ma dostęp;","Zabezpieczenie przed podrobieniem;","Nazwę portu lotniczego;"], c:["B"]},
+{q:"28. Jednorazowa przepustka samochodowa zgodnie z Rozp. 2015/1998 i KPOLC zawiera następujące dane:", a:["Napisy „GOŚĆ” i „VISITOR”;","Datę wydania;","Hologram;","Oznaczenie wizualne danego portu przy użyciu loga;"], c:["A"]},
+{q:"29. Osoba eskortująca zgodnie z Rozp. 2015/1998:", a:["Może mieć osobę eskortowaną przez pewien czas w polu widzenia;","Posiada ważną kartę identyfikacyjną członka załogi;","Posiada ważną jednorazową kartę identyfikacyjną portu lotniczego;","Posiada ważną kartę identyfikacyjną właściwego organu krajowego;"], c:["D"]},
+{q:"30. Do upoważnień pozwalających na dostęp do strefy zastrzeżonej lotniska zaliczamy:", a:["Kartę identyfikacyjną portu lotniczego;","Kartę personelu zatrudnionego na lotnisku;","Kartę personelu pokładowego zatrudnionego u koncesjonowanego przewoźnika lotniczego;","Kartę personelu zatrudnionego u agenta obsługi naziemnej;"], c:["A"]}
+];
+
+// losowa kolejność pytań
+questions.sort(()=>Math.random()-0.5);
+
+let current=0, results=[], selected=[], phase="answer";
+
+const qEl=document.getElementById("question");
+const aEl=document.getElementById("answers");
+const fb=document.getElementById("feedback");
+const btn=document.getElementById("mainBtn");
+const prog=document.getElementById("progress");
+const summary=document.getElementById("summary");
+
+function load(){
+  selected=[];
+  fb.innerHTML="";
+  aEl.innerHTML="";
+  btn.textContent="SPRAWDŹ";
+  phase="answer";
+  prog.textContent=`Pytanie ${current+1} / ${questions.length}`;
+  const q=questions[current];
+  qEl.textContent=q.q;
+  q.a.forEach((t,i)=>{
+    const l=String.fromCharCode(65+i);
+    const d=document.createElement("div");
+    d.className="answer";
+    d.textContent=l+") "+t;
+    d.onclick=()=>toggle(d,l);
+    aEl.appendChild(d);
+  });
+}
+
+function toggle(el,l){
+  if(phase!=="answer") return;
+  if(el.classList.contains("sel")){
+    el.classList.remove("sel");
+    selected=selected.filter(x=>x!==l);
+  }else{
+    el.classList.add("sel");
+    selected.push(l);
+  }
+}
+
+btn.onclick=()=>{
+  const q=questions[current];
+  if(phase==="answer"){
+    const ok=selected.sort().join()===[...q.c].sort().join();
+    results.push({q:q.q,a:q.a,sel:[...selected],cor:q.c});
+    if(ok) fb.innerHTML="<div class='good'>DOBRZE</div>";
+    else{
+      let h="<div class='bad'>ŹLE</div>";
+      q.a.forEach((t,i)=>{
+        const l=String.fromCharCode(65+i);
+        if(q.c.includes(l)) h+=`<div class='good'>${t}</div>`;
+        else if(selected.includes(l)) h+=`<div class='bad'>${t}</div>`;
+      });
+      fb.innerHTML=h;
+    }
+    btn.textContent="NASTĘPNE PYTANIE";
+    phase="feedback";
+  } else {
+    current++;
+    if(current<questions.length) load();
+    else showSummary();
+  }
+}
+
+function showSummary(){
+  document.getElementById("app").style.display="none";
+  let good=0;
+  results.forEach(r=>{if(r.sel.sort().join()==r.cor.sort().join())good++;});
+  let html=`<h2>Wynik: ${(good/results.length*100).toFixed(1)}%</h2>`;
+  results.forEach(r=>{
+    html+=`<p>${r.q}</p>`;
+    r.a.forEach((t,i)=>{
+      const l=String.fromCharCode(65+i);
+      let cls="";
+      if(r.cor.includes(l)) cls="good";
+      else if(r.sel.includes(l)) cls="bad";
+      html+=`<div class='${cls}'>${t}</div>`;
+    });
+  });
+  summary.innerHTML=html;
+  summary.classList.remove("hidden");
+}
+
+load();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

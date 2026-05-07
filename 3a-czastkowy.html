@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test kontroli bezpieczeństwa</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f4f4f4;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:16px;
+    background:white;
+    min-height:100vh;
+    box-sizing:border-box;
+}
+
+#question{
+    font-weight:bold;
+    font-size:1.1rem;
+    margin-bottom:16px;
+}
+
+.answer{
+    padding:14px;
+    margin-bottom:10px;
+    border:2px solid #ccc;
+    border-radius:10px;
+    font-size:1rem;
+    cursor:pointer;
+}
+
+.answer:hover{background:#eef}
+
+.selected{
+    background:#cce5ff;
+    border-color:#3399ff;
+}
+
+.correctAnswer{
+    background:#b6f5b6 !important;
+    border-color:green !important;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    font-size:1.1rem;
+    border:none;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+#checkBtn{background:#1976d2;color:white}
+#nextBtn{background:#444;color:white}
+
+.correct{color:green;font-weight:bold}
+.wrong{color:red;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div id="question"></div>
+    <div id="answers"></div>
+
+    <button id="checkBtn" onclick="check()">Sprawdź</button>
+    <button id="nextBtn" onclick="next()">Dalej</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+let allQuestions = [
+{q:"1) Do metod kontroli bezpieczeństwa kabinowego zgodnie z Rozp 2015/1998 zaliczamy:",a:["ETD;","Kontrolę manualną;","Urządznie Rentgenowskie","PWMW"],c:[0,1,2]},
+{q:"2) Jeżeli OKB nie może stwierdzić, czy bagaż kabinowy zawiera przedmioty zabronione to:",a:["Wzywa Straż Graniczną;","Nie dopuszcza bagażu do strefy zastrzeżonej;","Poddaje powtórnej kontroli bezpieczeństwa","Dopuszcza bagaż do strefy zastrzeżonej"],c:[1,2]},
+{q:"3) Do podstawowych metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy",a:["MDE;","PWMW;","SMD;","Kontrolę manualną"],c:[3]},
+{q:"4) Żywe zwierzę przewożone na pokładzie samolotu zostanie poddane kontroli bezpieczeństwa jak:",a:["Pasażer;","Bagaż kabinowy;","Osoba niebędąca pasażerem;","Bagaż rejestrowany;"],c:[0,1]},
+{q:"5) Jeżeli podczas kontroli bezpieczeństwa bagażu kabionowego operator kontr ujawni/zauważy w  bagażu duże urządzenie elektryczne, to:",a:["Wyjmuje się je z bagażu;","Bagaż poddaje się ponownej kontroli bezpieczeństwa;","Urządzenie elektryczne podlega kontroli bezpieczeństwa oddzielnie od bagażu;","Poddaje się takie urządzenie elektryczne kontroli z wykorzystaniem urządzenia LEDS"],c:[0,1,2]},
+{q:"6) Operator kontroli bezpieczeństwa podczas kontroli bezpieczeństwa bagażu korzystając z urządzenia rentgenowskiego:",a:["Nie może weryfikować obrazów w sposób ciągły dłużej niż 10 min;","Nie może weryfikować obrazów w sposób ciągły dłużej niż 15 min;","Nie może weryfikować obrazów w sposób ciągły dłużej niż 20 min;","Nie może weryfikować obrazów w sposób ciągły dłużej niż 25 min;"],c:[2]},
+{q:"7) Jeżeli stosuje się urządzenie rentgenowskie z oprogramowaniem TIP do kontroli bagażu kabinowego, to jaki minimalny odsetek % bagażu może podlegać wyrywkowej kontroli bezpieczeństwa",a:["W takiej sytuacji bagaż nie podlega wyrywkowej kontroli;","Co najmniej 5 %;","Co najmniej 10 %;","Co najmniej 20 %;"],c:[1]},
+{q:"8) Zgodnie z przepisami do kontroli bezpieczeństwa bagażu kabinowego z wykorzystaniem ETD pobiera się próbki co najmniej  z:",a:["Wyłącznie z części zewnętrznych bagażu;","Wyłącznie z wnętrza danego bagażu;","Ze spodu i wierzchu dłoni;","Z części zewnętrznych oraz wewnętrznych bagażu;"],c:[3]},
+{q:"9) Sprzęt ułatwiający podróżowanie pasażerowi o ograniczonej możliwości poruszania traktujemy podczas kontroli bezpieczeństwa tak samo jak:",a:["Bagaż rejestrowany;","Bagaż kabinowy;","Przedmioty przenoszone przez osoby niebędące pasażerami;","Zaopatrzenie portu lotniczego;"],c:[1]},
+{q:"10) Przedmioty zabronione w bagażu kabinowym o ile nie są zabronione inaczej zgodnie z KPOLC mogą być:",a:["umieszczone przez pasażera w bagażu rejestrowanym podczas trwania odprawy biletowo-bagażowej;","Oznakowane prze przewoźnika lotniczego jako bagaż rejestrowany i sprawdzone podczas kontroli bezpieczeństwa pasażerów i bagażu kabinowego;","Pozostawione w punkcie kontroli bezpieczeństwa celem przechowani do odbioru","Przechowane na lotnisku za opłatą w przeznaczonym do tego celu pomieszczeniu do odbioru przez pasażera;"],c:[0,1,3]},
+{q:"11) Do dodatkowych środków kontroli bezpieczeństwa bagażu kabinowego zalicza się:",a:["Kontrolę wzrokową;","HHMD;","Urządzenie rentgenowskie;","ETD"],c:[3]},
+{q:"12) Do metod kontroli bezpieczeństwa przedmiotów przenoszonych  przez osoby niebędące pasażerami zgodnie z Rozp. 2015/1998 zaliczam:",a:["Kontrolę wzrokową;","SED;","SMD;","PWMW"],c:[3]},
+{q:"13) Do kategorii przedmiotów zabronionych w bagażu kabinowym zaliczamy:",a:["Rekawice robocze;","Dynamit;","Nóż sprężynowy;","Aerozol do odstraszania zwierząt"],c:[1,2,3]},
+{q:"14) Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z  Rozp 2015/1998 zaliczamy:",a:["ETD w połączeniu z HHMD;","ETD;","Urządzeni do wykrywania materiałów wybuchowych;","Urządzenie do wykrywania materiałów wybuchowych w butach;"],c:[1]},
+{q:"15) Do kategorii przedmiotów zabronionych w przedmiotach przenoszonych przez osoby niebędące pasażerami zaliczamy:",a:["Kubota;","Zestaw narzędzi roboczych;","Procę;","Szablę;"],c:[0,2,3]},
+{q:"16) Operator kontroli bezpieczeństwa po upływie 20 minut ciągłej analizy obrazów:",a:["Nie może weryfikować obrazów przynajmniej przez 5 minut;","Nie może weryfikować obrazów przynajmniej przez 10 minut;","Nie może weryfikować obrazów przynajmniej przez 15 minut;","Może kontynuować weryfikację bez przerwy;"],c:[1]},
+{q:"17) Jakie płyny, aerozole i żele mogą być dopuszczone do przewozu na pokładzie statku powietrznego przez pasażera",a:["Wszystkie płyny, aerozole i żele o pojemności powyżej 100 ml;","płyny, aerozole i żele szczelnie zamknięte w STEB, w których w widoczny sposób umieszczono odpowiedni dowód potwierdzający ich zakup w strefie operacyjnej lotniska lub na pokładzie statku powietrznego","Płyny, aerozole i żele niezbędne dla pasażera na czas podróży ze względów zdowia/dieta/niemowlęta","Każdy płyn, aerozol i żel przeznaczony dla dziecka"],c:[1,2]},
+{q:"18) Zgodnie z przepisami do kontroli bagażu kabinowego z wykorzystaniem ETD pobier się próbki z:",a:["Zamków błyskawicznych;","Rączek bagażu;","Zamknieć danego bagażu;","Zewnętrznej podszewki bagażu;"],c:[0,1,2]},
+{q:"19) Do płynów, aerozoli i żeli, które podlegają kontroli z wykorzystaniem LEDS zaliczamy:",a:["Płyny, aerozole i żele o poj. Pow. 100 ml szczelnie zamknięte w STEB wyposażone w odpowiedni dowód potwierdzający ich zakup w strefie operacyjnej lotniska lub SP;","Pożywienie dla niemowląt o pojemności poniżej 100ml;"," płyny, aerozole i żele o poj. pow. 100 ml niezbędne dla pasażera na czas podróżyze względu na specjalną dietę","płyny, aerozole i żele o poj. pow. 100 ml niezbędne dla pasażera podczas podróżyze względów zdrowotnych"],c:[0,2,3]},
+{q:"20) Gdy pasażer przenosi płyny, aerozole i żele zapakowane w STEB to opertor potwierdza:",a:["Czy torba, w której się znajdują umożliwia łatwe stwierdzenie naruszenia;","Miejsce zakupu płynów;","Czy torba spełnia wymogi dotyczące ochrony zalecane przez IATA;","Czy torba jest szczelnie zamknięta;"],c:[0,1,3]},
+{q:"21) Do dodatkowych środków kontroli bezpieczeństwa przedmiotów przez osoby nie będące pasażerami zaliczamy:",a:["Kontrolę wzrokową;","SED;","ETD;","HHMD;"],c:[2]},
+{q:"22) Zgodnie z przepisami do kontroli bezpieczeństwa bagażu kabinowego pobiera się próbki z:",a:["Wewnętrznej części podszewki bagażu;","Zewnętrznych kieszeni bagażu;","Dowolnego dużego przedmiotu znajdującego się wewnątrz bagażu;","Rączek bagażu;"],c:[0,2,3]},
+{q:"23) Operator kontroli bezpieczeństwa w ramach kontroli bezpieczeństwa jest uprawniony do:",a:["niedopuszczenia do wejścia na obszar podlegający ochronie osoby nieposiadającej wymaganych uprawnień;","Korzysta z urządzeń technicznych do wykrywania urządzeń, przedmiotów i materiałów których przenoszenie jest zabronione;","sprawdzania przedmiotów wprowadzanych do strefy zastrzeżonej lotniska;","Zatrzymania pasażera, który stanowi zagrożenie w punkcie kontroli bezpieczeństwa;"],c:[0,1,2]},
+{q:"24) Służba ochrony lotniska wykonuje zadania zarządzającego lotniskiem w zakresie:",a:["Kontroli dostępu do stref zastrzeżonych;","ujmowania i przekazywania Straży Granicznej osób zakłócających porządek publiczny","Kontroli przepustek wydawanych przez zarządzającego lotniskiem;","Zatrzymywania pasażerów zakłócających porządek"],c:[0,1,2]},
+{q:"25) Do podstawowych metod kontroli bezpieczeństwa bagażu kabinowego zaliczamy:",a:["ETD;","PWMW;","SED","EDS"],c:[3]}
+];
+
+let questions=[],wrong=[],index=0,selected=[];
+
+function start(){questions=[...allQuestions];load();}
+function load(){
+selected=[];
+let q=questions[index];
+document.getElementById("question").innerText=q.q;
+let letters=["A","B","C","D"],html="";
+q.a.forEach((x,i)=>{html+=`<div class="answer" id="a${i}" onclick="toggle(${i})"><b>${letters[i]})</b> ${x}</div>`});
+document.getElementById("answers").innerHTML=html;
+document.getElementById("result").innerText="";
+}
+function toggle(i){
+let e=document.getElementById("a"+i);
+if(selected.includes(i)){selected=selected.filter(x=>x!=i);e.classList.remove("selected");}
+else{selected.push(i);e.classList.add("selected");}
+}
+function check(){
+let q=questions[index];
+let s=[...selected].sort().join(","),c=[...q.c].sort().join(",");
+if(s===c) document.getElementById("result").innerHTML="<span class='correct'>DOBRZE</span>";
+else{
+document.getElementById("result").innerHTML="<span class='wrong'>ŹLE</span>";
+q.c.forEach(i=>{
+document.getElementById("a"+i).classList.add("correctAnswer");
+});
+wrong.push(q);
+}
+}
+function next(){
+index++;
+if(index>=questions.length){
+if(wrong.length==0){alert("Wszystkie odpowiedzi poprawne!");return;}
+questions=[...wrong];wrong=[];index=0;alert("Powtarzasz tylko błędne pytania");
+}
+load();
+}
+start();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

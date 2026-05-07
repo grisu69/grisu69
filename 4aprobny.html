@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Egzamin Ochrona Lotnictwa</title>
+<style>
+body{font-family:Arial;background:#eef;padding:20px}
+#app{background:white;padding:20px;border-radius:10px;max-width:1100px;margin:auto}
+.answer{border:1px solid #aaa;padding:10px;margin:6px;border-radius:6px;cursor:pointer}
+.answer.selected{background:#d0e6ff}
+.answer.correct{background:#b7f7b7}
+.answer.wrong{background:#f7b7b7}
+#msg{font-size:22px;margin-top:10px}
+button{padding:10px 25px;font-size:16px;margin-top:15px}
+</style>
+</head>
+<body>
+
+<div id="app">
+<h2 id="mode"></h2>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="msg"></div>
+<button onclick="check()">SPRAWDŹ</button>
+<button onclick="next()">DALEJ</button>
+</div>
+
+<script>
+const Q = [
+  {
+    q: `1. Do kategorii przedmiotów zabronionych do przewozu w zaopatrzeniu pokładowym zaliczamy:`,
+    a: [
+      `A) nóż do krojenia chleba;`,
+      `B) oliwa z oliwek o pojemności 500ml;`,
+      `C) spirytus salicylowy;`,
+      `D) aerozol do odstraszania zwierząt;`,
+      `E) wózek inwalidzki;`,
+      `F) kij baseballowy.`
+    ],
+    c: [3,5]
+  },
+  {
+    q: `2. Pracownik służby ochrony lotniska przy wykonywaniu zadań z zakresu kontroli bezpieczeństwa w lotnictwie cywilnym oraz ochrony osób i mienia w granicach chronionych obszarów, obiektów i urządzeń ma prawo do:`,
+    a: [
+      `A) korzystania ze środków chemicznych do wykrywania przedmiotów lub substancji, których posiadanie jest zabronione;`,
+      `B) korzystania ze środków technicznych do wykrywania przedmiotów lub substancji, których posiadanie jest zabronione;`,
+      `C) dokonywania przeszukania osoby i jej bagażu;`,
+      `D) zatrzymania osoby nieposiadającej wymaganych uprawnień;`,
+      `E) wykorzystywania psów do wykrywania substancji, których posiadanie jest zabronione.`
+    ],
+    c: [0,1,4]
+  },
+  {
+    q: `3. Urządzenie do wykrywania śladowych ilości materiałów wybuchowych w połączeniu ręcznym wykrywaczem metali można zastosować podczas kontroli bezpieczeństwa jeżeli kontrola z wykrywaczem metali:`,
+    a: [
+      `A) ETD jest nieskuteczna;`,
+      `B) EDS jest nieskuteczna;`,
+      `C) kontroli manualnej jest niepożądana;`,
+      `D) PWMW jest nieskuteczna;`,
+      `E) WTMD jest nieskuteczna;`,
+      `F) żadna odpowiedź nie jest prawidłowa.`
+    ],
+    c: [2]
+  },
+  {
+    q: `4. Kontroli bezpieczeństwa podda się:`,
+    a: [
+      `A) Ministra spraw wewnętrznych i administracji;`,
+      `B) funkcjonariusza Agencji Wywiadu posiadającego legitymację służbową podczas wykonywania czynności służbowych;`,
+      `C) funkcjonariusza Służby Celno-Skarbowej w trakcie wykonywania czynności służbowych posiadającego czasową kartę identyfikacyjną portu lotniczego;`,
+      `D) strażaka Państwowej Straży Pożarnej w trakcie wykonywania czynności kontrolno-rozpoznawczych lotnisku posiadającego czasową kartę identyfikacyjną portu lotniczego;`,
+      `E) ambasadora przewożącego pocztę dyplomatyczną;`,
+      `F) kwalifikowanych pracowników ochrony fizycznej zatrudnionych w Służbie Ochrony Lotniska w trakcie wykonywania czynności służbowych wyposażonych w broń palną i posiadających kartę identyfikacyjną portu lotniczego.`
+    ],
+    c: [1,4]
+  },
+  {
+    q: `5. Do kategorii przedmiotów dopuszczonych do wnoszenia na teren strefy zastrzeżonej lotniska przez osoby niebędące pasażerami zaliczamy:`,
+    a: [
+      `A) noże do krojenia chleba o długości ostrza powyżej 6 cm;`,
+      `B) zestaw narzędzi roboczych;`,
+      `C) pałki paralizujące;`,
+      `D) aerozole odstraszające zwierzęta;`,
+      `E) zapalniki;`,
+      `F) substancje zapalające.`
+    ],
+    c: [0,1]
+  },
+  {
+    q: `6. W skład służb ochrony wchodzą:`,
+    a: [
+      `A) Straż Graniczna;`,
+      `B) Agencja Bezpieczeństwa Wewnętrznego;`,
+      `C) Służba Celno-Skarbowa;`,
+      `D) Służba Ochrony Lotniska realizująca zadania na terenie lotniska;`,
+      `E) Żandarmeria Wojskowa.`
+    ],
+    c: [0,1,3]
+  },
+  {
+    q: `7. Służba ochrony lotniska wykonuje zadania zarządzającego lotniskiem w zakresie:`,
+    a: [
+      `A) prowadzenia kontroli bezpieczeństwa;`,
+      `B) kontroli dostępu do stref zastrzeżonych;`,
+      `C) zatrzymania i przekazania Policji osoby, która bez upoważnienia uzyskała lub usiłowała uzyskać dostęp do strefy zastrzeżonej;`,
+      `D) ujmowania i przekazywania Służbie Celno-Skarbowej osoby naruszającej warunki bezpieczeństwa lotnictwa;`,
+      `E) ochrony stref zastrzeżonych lotniska i innych stref w rozumieniu przepisów rozporządzenia nr 300/2008/WE;`,
+      `F) czynności zabezpieczenia technicznego.`
+    ],
+    c: [0,1,4,5]
+  },
+  {
+    q: `8. Do kategorii przedmiotów zabronionych do przewożenia w bagażu kabinowym zaliczamy:`,
+    a: [
+      `A) młotek o długości trzonka 6 cm;`,
+      `B) noże o długości ostrza 6 cm;`,
+      `C) czekany;`,
+      `D) szpikulce do lodu;`,
+      `E) gazy obronne;`,
+      `F) pałki metalowe pokryte skórą.`
+    ],
+    c: [0,2,3,4,5]
+  },
+  {
+    q: `9. Do podstawowych metod kontroli bezpieczeństwa osób niebędących pasażerami zaliczamy:`,
+    a: [
+      `A) urządzenie do prześwietlania osób niewykorzystujące promieniowania jonizującego;`,
+      `B) system do wykrywania materiałów wybuchowych;`,
+      `C) bramkę do wykrywania metali;`,
+      `D) psa do wykrywania materiałów wybuchowych;`,
+      `E) urządzenie do wykrywania metalu w butach;`,
+      `F) urządzenie do wykrywania śladowych ilości materiałów wybuchowych.`
+    ],
+    c: [0,2]
+  },
+  {
+    q: `10. Do dodatkowych środków kontroli bezpieczeństwa pasażerów zaliczamy:`,
+    a: [
+      `A) psa do wykrywania materiałów wybuchowych;`,
+      `B) urządzenie do wykrywania śladowych ilości materiałów wybuchowych;`,
+      `C) kontrolę wzrokową;`,
+      `D) ręczny wykrywacz metali;`,
+      `E) kontrolę manualną;`,
+      `F) bramkę do wykrywania metali.`
+    ],
+    c: [0,1,3]
+  },
+  {
+    q: `11. Urządzenia rentgenowskie posiadają następujące funkcje wzmacniania obrazu prezentowanego na ekranie:`,
+    a: [
+      `A) rozróżnianie metali żelaznych i nieżelaznych;`,
+      `B) rozróżnianie substancji organicznych i nieorganicznych;`,
+      `C) wizualne prezentowanie materiałów, do których promienie rentgenowskie nie mogą przeniknąć;`,
+      `D) wyświetlanie obrazu monochromatycznego, na którym biel wyświetla się jako czerń, a czerń wyświetla się jako biel;`,
+      `E) inwersja sygnału wideo, tak aby umożliwić wyświetlanie obrazu monochromatycznego, na którym biel wyświetla się jako czerń, a czerń wyświetla się jako biel;`,
+      `F) wzmacnianie krawędzi.`
+    ],
+    c: [1,2,4,5]
+  },
+  {
+    q: `12. Do kategorii przedmiotów zabronionych do wnoszenia do strefy zastrzeżonej w zaopatrzeniu pokładowym zaliczamy:`,
+    a: [
+      `A) nożyczki o długości ostrza 6 cm;`,
+      `B) strzały;`,
+      `C) urządzenia do porażania;`,
+      `D) śrubokręty o długości trzonka 7 cm;`,
+      `E) bezprzewodowe przenośne wiertarki elektryczne.`
+    ],
+    c: [1,2]
+  },
+  {
+    q: `13. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części statku powietrznego niż luk bagażowy statku powietrznego zaliczamy:`,
+    a: [
+      `A) systemy do wykrywania materiałów wybuchowych;`,
+      `B) urządzenie do wykrywania materiałów wybuchowych;`,
+      `C) psa do wykrywania metali;`,
+      `D) urządzenie do wykrywania materiałów wybuchowych;`,
+      `E) kontrolę manualną;`,
+      `F) urządzenie rentgenowskie.`
+    ],
+    c: [0,4,5]
+  },
+  {
+    q: `14. Kontrola bezpieczeństwa pasażera przy użyciu urządzenia do wykrywania śladowych ilości materiałów wybuchowych obejmuje, co najmniej pobranie próbek z:`,
+    a: [
+      `A) z wierzchu i spodu dłoni oraz przedmiotu osobistego przenoszonego przez pasażera;`,
+      `B) z przedmiotu osobistego przenoszonego przez pasażera oraz z zapięcia jego ubrania;`,
+      `C) zewnętrznej strony obwodu na wysokości pasa oraz zapięcia butów;`,
+      `D) z zapięcia ubrania oraz z wierzchu butów;`,
+      `E) z wierzchu i spodu dłoni oraz z zapięcia butów znajdujących się w bagażu kabinowym pasażera;`,
+      `F) z wierzchu i spodu dłoni oraz z zewnętrznej strony obwodu na wysokości pasa.`
+    ],
+    c: [3,5]
+  },
+  {
+    q: `15. Do zaopatrzenia pokładowego zaliczamy:`,
+    a: [
+      `A) bagaż kabinowy;`,
+      `B) przedmioty przenoszone przez osoby niebędące pasażerami;`,
+      `C) pocztę przewoźnika lotniczego;`,
+      `D) materiały przewoźnika lotniczego;`,
+      `E) żadna odpowiedź nie jest prawidłowa.`
+    ],
+    c: [4]
+  },
+  {
+    q: `16. Osoba zamierzająca przewieźć broń gazową jest zobowiązana w celu zadeklarowania tego faktu na lotnisku wylotu do:`,
+    a: [
+      `A) przedstawiciela przewoźnika lotniczego, którego samolotem będzie przewożona broń;`,
+      `B) Służby Ochrony Lotniska;`,
+      `C) Policji;`,
+      `D) Służby Celno-Skarbowej;`,
+      `E) Specjalistycznej Uzbrojonej Formacji Ochronnej;`,
+      `F) Straży Granicznej.`
+    ],
+    c: [0,5]
+  },
+  {
+    q: `17. Do podstawowych metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części statku powietrznego niż luk bagażowy zaliczamy:`,
+    a: [
+      `A) urządzenie rentgenowskie;`,
+      `B) psa do wykrywania materiałów wybuchowych;`,
+      `C) urządzenie do wykrywania materiałów wybuchowych w butach;`,
+      `D) urządzenie do wykrywania śladowych ilości materiałów wybuchowych;`,
+      `E) system do wykrywania urządzeń wybuchowych;`,
+      `F) urządzenie do wykrywania śladowych ilości materiałów wybuchowych w połączeniu z wykrywaczem metali.`
+    ],
+    c: [0]
+  },
+  {
+    q: `18. Do metod kontroli bezpieczeństwa pasażera stosowanych, jako dodatkowy środek bezpieczeństwa zaliczamy:`,
+    a: [
+      `A) urządzenie do wykrywania materiałów wybuchowych w butach;`,
+      `B) kontrolę manualną;`,
+      `C) urządzenie do wykrywania metali;`,
+      `D) urządzenie do wykrywania metalu w butach;`,
+      `E) systemy do wykrywania materiałów wybuchowych;`,
+      `F) żadna odpowiedź nie jest prawidłowa.`
+    ],
+    c: [0,3]
+  },
+  {
+    q: `19. Do kategorii przedmiotów zabronionych do przewożenia w zaopatrzeniu pokładowym zaliczamy:`,
+    a: [
+      `A) szpikulce do lodu;`,
+      `B) wiertarki i wiertła;`,
+      `C) noże o długości ostrza 5 cm;`,
+      `D) tonfy;`,
+      `E) kajdanki;`,
+      `F) płynny do dezynfekcji o stężeniu alkoholu poniżej 70%.`
+    ],
+    c: [3,4]
+  },
+  {
+    q: `20. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do towarowego SP zaliczamy:`,
+    a: [
+      `A) kontrolę wzrokową;`,
+      `B) psa do wykrywania materiałów wybuchowych w połączeniu z kontrolą wzrokową;`,
+      `C) urządzenie do wykrywania śladowych ilości materiałów wybuchowych w połączeniu z kontrolą manualną;`,
+      `D) system do wykrywania metalu;`,
+      `E) urządzenie do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną;`,
+      `F) psa do wykrywania materiałów wybuchowych.`
+    ],
+    c: [0,5]
+  },
+  {
+    q: `21. Ze sprawdzenia będą zwolnione lub nie będą podlegały pojazdy:`,
+    a: [
+      `A) członków Państwowej Komisji Badania Wypadków Lotniczych;`,
+      `B) funkcjonariuszy Służby Ochrony Lotniska podczas wykonywania czynności służbowych;`,
+      `C) których zadaniem jest reagowanie na nagłe przypadki poważnego zagrożenia życia ludzkiego lub mienia;`,
+      `D) Urzędu Lotnictwa Cywilnego;`,
+      `E) lotniczej służby ratowniczo-gaśniczej;`,
+      `F) funkcjonariuszy Straży Granicznej w trakcie wykonywania czynności służbowych.`
+    ],
+    c: [2]
+  },
+  {
+    q: `22. Jeżeli urządzenie do prześwietlania osób niewykorzystujące promieniowania jonizującego podczas kontroli bezpieczeństwa osoby niebędącej pasażerem reaguje sygnałem alarmowym, przyczynę alarmu można ustalić poddając osobę:`,
+    a: [
+      `A) kontroli z wykorzystaniem urządzenia do wykrywania śladowych ilości materiałów wybuchowych;`,
+      `B) kontroli manualnej;`,
+      `C) kontroli bezpieczeństwa z wykorzystaniem urządzenia do wykrywania metalu w butach („SMD”), jeżeli alarm pojawił się w dolnej części urządzenia do prześwietlania osób niewykorzystującego promieniowania jonizującego zatwierdzonego do stosowania łącznie z SMD;`,
+      `D) ukierunkowanej kontroli manualnej;`,
+      `E) ponownej kontroli z wykorzystaniem urządzenia do prześwietlania osób niewykorzystującego promieniowania jonizującego;`,
+      `F) poddaje się kontroli z wykorzystaniem bramki do wykrywania metali.`
+    ],
+    c: [1,3,4]
+  },
+  {
+    q: `23. Do przesyłek, które mogą zostać zwolnione z kontroli bezpieczeństwa zaliczamy:`,
+    a: [
+      `A) przesyłki z materiałami ratującymi życie, dla których czas ma istotne znaczenie, pod warunkiem, że pochodzą z wiarygodnego źródła i towarzyszy im odpowiednia dokumentacja;`,
+      `B) ładunek i pocztę przewożone w ramach indywidualnych jednorazowych przelotów realizowanych na zamówienie pojedynczego nadawcy;`,
+      `C) z przyczyn obiektowych, rządowej poczty, w przypadku których ochronę i zabezpieczenie zapewnia dane państwo członkowskie;`,
+      `D) przesyłek pocztowych składających się tylko z przedmiotów, których indywidualny całkowity ciężar nie przekracza 2 kg i które są przewożone lotami pocztowymi w granicach państwa członkowskiego, w celu dostarczenia pod adres w danym państwie członkowskim;`,
+      `E) materiały jądrowe, pod warunkiem, że są one zabezpieczone zgodnie z postanowieniami Konwencji Haskiej o ochronie fizycznej materiałów jądrowych;`,
+      `F) próbki biomedyczne, które mogłyby zostać uszkodzone w przypadku poddania ich kontroli bezpieczeństwa pod warunkiem, że pochodzą z wiarygodnego źródła i towarzyszy im odpowiednia dokumentacja.`
+    ],
+    c: [0,1,2,3,5]
+  },
+  {
+    q: `24. Na karcie identyfikacyjnej członka załogi zatrudnionego przez unijnego przewoźnika lotniczego znajduje się:`,
+    a: [
+      `A) oznaczenie przy użyciu kolorów lub liter, obszarów i stref, do których posiadacz ma dostęp;`,
+      `B) datę ważności;`,
+      `C) nazwę przewoźnika lotniczego;`,
+      `D) nazwisko i zdjęcie posiadacza;`,
+      `E) słowo „cabin crew” w języku angielskim;`,
+      `F) numer karty identyfikacyjnej.`
+    ],
+    c: [1,2,3]
+  },
+  {
+    q: `25. Do osób upoważnionych do eskortowania w strefach zastrzeżonych lotniska zaliczamy:`,
+    a: [
+      `A) inspektor Urzędu Lotnictwa Cywilnego z certyfikatem;`,
+      `B) operator kontroli bezpieczeństwa posiadający certyfikat inspektora lotniska;`,
+      `C) funkcjonariusz służbowych;`,
+      `D) pracownik Straży Granicznej posiadający legitymację służbową w trakcie wykonywania czynności służbowych;`,
+      `E) funkcjonariusz Służby Ochrony Lotniska posiadający legitymację służbową w trakcie wykonywania czynności służbowych;`,
+      `F) funkcjonariusz Policji posiadający legitymację służbową w trakcie wykonywania czynności służbowych.`
+    ],
+    c: [0,1,3]
+  },
+  {
+    q: `26. Wskaż prawidłowe oznaczenia (wraz z definicjami) przesyłek zwolnionych z kontroli bezpieczeństwa:`,
+    a: [
+      `A) MAIL - przesyłki pocztowe składające się tylko z przedmiotów, których indywidualny całkowity ciężar nie przekracza 200 g i które są przewożone lotami pocztowymi w granicach unii europejskiej, w celu dostarczenia pod adres w państwie członkowskim UE;`,
+      `B) LFMS - materiały ratujące życie, dla których czas ma istotne znaczenie, pod warunkiem, że pochodzą one z wiarygodnego źródła i towarzyszy im odpowiednia dokumentacja;`,
+      `C) BION - próbki biomedyczne, które mogłyby zostać uszkodzone w przypadku poddania kontroli bezpieczeństwa, pod warunkiem, że pochodzą one z wiarygodnego źródła i towarzyszy im odpowiednia dokumentacja;`,
+      `D) TRNS - ładunek transferowy i poczta transferowa;`,
+      `E) SMUS - przesyłki łączone składające się wyłącznie z przesyłek, gdzie grubość każdej z nich jest mniejsza niż 6 cm, a całkowity ciężar każdej z nich jest mniejszy niż 250 g;`,
+      `F) DIPL - bagaż dyplomatyczny.`
+    ],
+    c: [3,5]
+  },
+  {
+    q: `27. Poczta dyplomatyczna:`,
+    a: [
+      `A) podlega kontroli bezpieczeństwa zgodnie z konwencją wiedeńską o stosunkach dyplomatycznych;`,
+      `B) nie podlega kontroli bezpieczeństwa zgodnie z konwencją wiedeńską o stosunkach dyplomatycznych;`,
+      `C) w przypadku podejrzenia, że zawartość może posłużyć popełnieniu aktu bezprawnej ingerencji w lotnictwie cywilnym, odmawia się jej przewozu;`,
+      `D) musi być zatwierdzona przez Zarządzającego lotniskiem poprzez operatora kontroli bezpieczeństwa;`,
+      `E) jest zabezpieczana przez Straż Graniczną;`,
+      `F) jest zabezpieczana przez służbę ochrony lotniska.`
+    ],
+    c: [1,2]
+  },
+  {
+    q: `28. Do metod kontroli bezpieczeństwa zaopatrzenia pokładowego zaliczamy:`,
+    a: [
+      `A) systemy do wykrywania urządzeń wybuchowych;`,
+      `B) system do wykrywania urządzeń wybuchowych w połączeniu z kontrolą wzrokową;`,
+      `C) psy do wykrywania materiałów wybuchowych w połączeniu z kontrolą wzrokową;`,
+      `D) psy do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną;`,
+      `E) urządzenie do wykrywania śladowych ilości materiałów wybuchowych w połączeniu z kontrolą manualną.`
+    ],
+    c: [2]
+  },
+  {
+    q: `29. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zaliczamy:`,
+    a: [
+      `A) systemy do wykrywania materiałów wybuchowych;`,
+      `B) urządzenie do wykrywania śladowych ilości materiałów wybuchowych;`,
+      `C) psa do wykrywania materiałów wybuchowych;`,
+      `D) kontrolę manualną;`,
+      `E) urządzenie do wykrywania materiałów wybuchowych.`
+    ],
+    c: [0,1,2,3]
+  },
+  {
+    q: `30. „STEB” oznacza:`,
+    a: [
+      `A) torbę zabezpieczoną w sposób umożliwiający łatwe stwierdzenie jej naruszenia zgodną z wytycznymi IATA;`,
+      `B) torbę zabezpieczoną w sposób umożliwiający łatwe stwierdzenie jej naruszenia zgodną z wytycznymi ULC;`,
+      `C) zamykaną przeźroczystą torebkę plastikową o pojemności do 1 litra zgodną z wytycznymi IATA;`,
+      `D) zamykaną przeźroczystą torebkę plastikową o pojemności do 1 litra zgodną z wytycznymi ICAO;`,
+      `E) torbę zabezpieczoną w sposób umożliwiający łatwe stwierdzenie jej naruszenia zgodną z wytycznymi ICAO;`,
+      `F) żadna odpowiedź nie jest prawidłowa.`
+    ],
+    c: [3]
+  },
+  {
+    q: `31. Zaopatrzenie pokładowe, które znajduje się w części innej niż część krytyczna strefy zastrzeżonej, uważa się za zabezpieczone przed nieupoważnioną ingerencją, jeżeli:`,
+    a: [
+      `A) jest fizycznie zabezpieczone tak, by zapobiec wprowadzeniu do niego przedmiotów;`,
+      `B) nie jest prawidłowo zabezpieczone;`,
+      `C) zaopatrzenie należy bezwzględnie poddać ponownej kontroli bezpieczeństwa;`,
+      `D) nie jest pozostawione bez nadzoru, a dostęp do niego jest ograniczony do osób zaangażowanych w ochronę i ładowanie zaopatrzenia pokładowego na pokład statku powietrznego;`,
+      `E) zostało zweryfikowane przez przewoźnika lotniczego na pokładzie którego będzie udostępniane pasażerom.`
+    ],
+    c: [0,3]
+  },
+  {
+    q: `32. Do kategorii przedmiotów zabronionych w poczcie i materiałach przewoźnika lotniczego załadowanych do luku bagażowego zaliczamy:`,
+    a: [
+      `A) tasaki i kije bejsbolowe;`,
+      `B) spłonki;`,
+      `C) płyny i aerozole o pojemności powyżej 100 ml;`,
+      `D) broń palna oraz części składowe broni palnej;`,
+      `E) amunicję;`,
+      `F) paralizatory.`
+    ],
+    c: [1,4]
+  },
+  {
+    q: `33. Do metod kontroli bezpieczeństwa pasażerów zaliczamy:`,
+    a: [
+      `A) urządzenie do kontroli osób niewykorzystujące promieniowania jonizującego;`,
+      `B) systemy do wykrywania materiałów wybuchowych;`,
+      `C) urządzenie do wykrywania metalu w butach;`,
+      `D) ręczny wykrywacz metali;`,
+      `E) system do wykrywania płynnych materiałów wybuchowych;`,
+      `F) system do wykrywania śladowych ilości materiałów wybuchowych.`
+    ],
+    c: [2]
+  },
+  {
+    q: `34. Podczas kontroli bezpieczeństwa pasażera z wykorzystaniem urządzenia ETD próbki śladowych cząsteczek pobiera się z:`,
+    a: [
+      `A) zewnętrznej strony obwodu na wysokości pasa;`,
+      `B) z zapięcia ubrania;`,
+      `C) z wierzchniej części butów;`,
+      `D) z obwodu pasa w tym kieszeni spodni;`,
+      `E) z zapięć butów;`,
+      `F) z dowolnego przedmiotu pasażera.`
+    ],
+    c: [0,1,2,4]
+  },
+  {
+    q: `35. Odsetek od 10% do 20% pasażerów, którzy nie uruchomili alarmu przechodząc przez bramkę do wykrywania metali, poddaje się kontroli bezpieczeństwa za pomocą:`,
+    a: [
+      `A) urządzenia do wykrywania materiałów wybuchowych w butach;`,
+      `B) psa do wykrywania materiałów wybuchowych;`,
+      `C) urządzenia do wykrywania śladowych ilości materiałów wybuchowych w połączeniu z urządzeniem do wykrywania metalu w butach;`,
+      `D) BS;`,
+      `E) kontroli manualnej w połączeniu z urządzeniem do wykrywania metalu w butach;`,
+      `F) urządzenia do wykrywania śladowych ilości materiałów wybuchowych.`
+    ],
+    c: [1,3,]
+  },
+  {
+    q: `36. Do metod kontroli bezpieczeństwa zaopatrzenia portu lotniczego zaliczamy:`,
+    a: [
+      `A) kontrolę wzrokową;`,
+      `B) urządzenie EDS;`,
+      `C) kontrolę manualną;`,
+      `D) psa do wykrywania materiałów wybuchowych w połączeniu z kontrolą wzrokową;`,
+      `E) urządzenie do wykrywania śladowych ilości materiałów wybuchowych w połączeniu z kontrolą wzrokową;`,
+      `F) urządzenie do prześwietlania.`
+    ],
+    c: [0,1,2,3,4]
+  },
+  {
+    q: `37. Jeżeli WTMD reaguje sygnałem dźwiękowym a przyczynę alarmu ustalono poprzez ponowne poddanie pasażerów kontroli bezpieczeństwa z użyciem WTMD to;`,
+    a: [
+      `A) tak skontrolowanych pasażerów należy poddać kontroli manualnej;`,
+      `B) od 10% do 20% tak skontrolowanych pasażerów należy poddać kontroli manualnej;`,
+      `C) od 10% do 20% tak skontrolowanych pasażerów należy poddać BS;`,
+      `D) od 10% do 20% tak niewykorzystującego promieniowania jonizującego należy poddać kontroli z wykorzystaniem Urządzenia do wykrywania materiałów wybuchowych w butach;`,
+      `E) od 10% do 20% tak skontrolowanych pasażerów należy poddać kontroli bezpieczeństwa przy użyciu psa do wykrywania materiałów wybuchowych w butach;`,
+      `F) od 10% do 20% tak skontrolowanych pasażerów należy poddać kontroli z wykorzystaniem psa do wykrywania śladowych ilości materiałów wybuchowych.`
+    ],
+    c: [1,2,4,5]
+  },
+  {
+    q: `38. Do płynów, aerozoli i żeli, które podlegają kontroli z wykorzystaniem urządzenia do wykrywania płynnych materiałów wybuchowych zaliczamy:`,
+    a: [
+      `A) każdy płyn, aerozol i żel dla dziecka;`,
+      `B) wszystkie płyny, aerozole i żele przeznaczone dla dziecka lub na pokładzie statku powietrznego o pojemności do 100 ml lub jej równowartości zakupione w porcie lotniczym;`,
+      `C) wszystkie płyny, aerozole i żele o pojemności do 100 ml lub jej równowartości w której są przewożone lotami pocztowymi w granicach unii europejskiej, w celu dostarczenia pod adres w państwie członkowskim;`,
+      `D) wszystkie płyny, aerozole i żele o pojemności do 100 ml lub jej równowartości niezbędne dla pasażera ze względu na specjalną dietę;`,
+      `E) wszystkie płyny, aerozole i żele o pojemności do 100 ml lub jej równowartości niezbędne dla pasażera ze zamykaną przeźroczystą torebką plastikową o pojemności nieprzekraczającej 1 litra, przy czym zawartość plastikowej torebki swobodnie się w niej mieści, a torebka jest dokładnie zamknięta;`,
+      `F) żadna odpowiedź nie jest prawidłowa.`
+    ],
+    c: [5]
+  },
+  {
+    q: `39. Bramka do wykrywania metali:`,
+    a: [
+      `A) wykrywa i sygnalizuje za pomocą alarmu co najmniej określone przedmioty metalowe, zarówno indywidualne jak i łącznie;`,
+      `B) wykrywa przedmioty metalowe niezależnie od jego położenia i usytuowania;`,
+      `C) jest zatwierdzona do stosowania łącznie z urządzeniem rentgenowskim;`,
+      `D) jest na stałe przymocowana do twardego podłoża;`,
+      `E) posiada wskaźnik wizualny sygnalizujący, że urządzenie działa;`,
+      `F) sygnał optyczny wskazuje siłę sygnału wykrytego przez WTMD.`
+    ],
+    c: [0,1,3,4,5]
+  },
+  {
+    q: `40. Pasażer potencjalnie uciążliwy:`,
+    a: [
+      `A) przed wejściem na pokład statku powietrznego podlega wraz z bagażem kabinowym kontroli bezpieczeństwa;`,
+      `B) eskortowany przez odpowiednie służby wprowadzany jest na pokład statku powietrznego przed innymi pasażerami;`,
+      `C) eskortowany przez odpowiednie służby wyprowadzany jest po opuszczeniu pokładu statku powietrznego przez innych pasażerów;`,
+      `D) przed wejściem na pokład statku powietrznego nie podlega wraz z bagażem kabinowym kontroli bezpieczeństwa;`,
+      `E) eskortowany przez odpowiednie służby wprowadzany jest na pokład statku powietrznego po tym jak wszyscy pasażerowie zajmą swoje miejsca;`,
+      `F) eskortowany przez odpowiednie służby wyprowadzany jest z pokładu statku powietrznego przed innymi pasażerami.`
+    ],
+    c: [0,1,2]
+  }
+];
+
+
+let mode="learning", pool=[...Array(40).keys()], wrong=[], i=0, selected=[], score=0;
+
+function show(){
+document.getElementById("mode").innerText=mode==="learning"?"TRYB NAUKI":"EGZAMIN";
+let q=Q[pool[i]];
+document.getElementById("question").innerText=q.q;
+let a=document.getElementById("answers"); a.innerHTML=""; selected=[];
+q.a.forEach((t,idx)=>{
+let d=document.createElement("div");
+d.className="answer";
+d.innerText=t;
+d.onclick=()=>{d.classList.toggle("selected"); selected.includes(idx)?selected=selected.filter(x=>x!=idx):selected.push(idx);};
+a.appendChild(d);
+});
+document.getElementById("msg").innerText="";
+}
+
+function check(){
+let q=Q[pool[i]];
+let ok=JSON.stringify([...selected].sort())===JSON.stringify([...q.c].sort());
+let divs=document.querySelectorAll(".answer");
+if(ok){document.getElementById("msg").innerHTML="<span style='color:green'>DOBRZE</span>"; if(mode==="exam")score++;}
+else{document.getElementById("msg").innerHTML="<span style='color:red'>ŹLE</span>"; wrong.push(pool[i]); q.c.forEach(i=>divs[i].classList.add("correct")); selected.forEach(i=>{if(!q.c.includes(i))divs[i].classList.add("wrong");});}
+}
+
+function next(){
+i++;
+if(i>=pool.length){
+if(mode==="learning"){pool=[...new Set(wrong)];wrong=[];i=0;if(pool.length==0){mode="exam";pool=[...Array(40).keys()];score=0;}}
+else{alert("WYNIK: "+score+"/40 = "+Math.round(score/40*100)+"%");return;}
+}
+show();
+}
+show();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

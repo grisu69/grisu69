@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Egzamin Ochrona Lotnictwa</title>
+<style>
+body{font-family:Arial;background:#eef;padding:20px}
+#app{background:white;padding:20px;border-radius:10px;max-width:1100px;margin:auto}
+.answer{border:1px solid #aaa;padding:10px;margin:6px;border-radius:6px;cursor:pointer}
+.answer.selected{background:#d0e6ff}
+.answer.correct{background:#b7f7b7}
+.answer.wrong{background:#f7b7b7}
+#msg{font-size:22px;margin-top:10px}
+button{padding:10px 25px;font-size:16px;margin-top:15px}
+</style>
+</head>
+<body>
+
+<div id="app">
+<h2 id="mode"></h2>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="msg"></div>
+<button onclick="check()">SPRAWDŹ</button>
+<button onclick="next()">DALEJ</button>
+</div>
+
+<script>
+const Q = [
+{q:"1. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) ETD;","B) kontrolę manualną;","C) urządzenie rentgenowskie;","D) PWMW."],c:[0,1,2,3]},
+{q:"2. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["A) funkcjonariusze Służby Ochrony Państwa;","B) strażacy Państwowej Straży Pożarnej w trakcie wykonywania czynności kontrolno-rozpoznawczych na lotnisku;","C) strażacy pełniący służbę lub zatrudnieni w lotniskowej służbie ratowniczo-gaśniczej;","D) funkcjonariusze Centralnego Biura Antymonopolowego."],c:[0,1,2]},
+{q:"3. Do kontroli bezpieczeństwa osób z wykorzystaniem ETD używa się próbek pobranych co najmniej z:",a:["A) z zapięć ubrań i zewnętrznej strony obwodu na wysokości pasa;","B) zapięć ich ubrań i z wierzchu ich ubrań;","C) przedmiotu osobistego ostatniego dotykanego i zapięć butów;","D) z wierzchu i spodu dłoni osób i zapięć ich ubrań."],c:[0,2]},
+{q:"4. Odsetek od 10% do 20% pasażerów, którzy nie uruchomili alarmu przechodząc przez WTMD poddaje się kontroli bezpieczeństwa za pomocą:",a:["A) ETD+SMD;","B) urządzenia do prześwietlania osób niewykorzystującego promieniowania jonizującego;","C) kontrola manualna;","D) kontrola manualna + SMD."],c:[1,2]},
+{q:"5. Ze sprawdzenia zwolnione są pojazdy posiadające przepustkę danego portu lotniczego:",a:["A) Centralnego Biura Antykorupcyjnego;","B) Służby Celno-Skarbowej;","C) Wojsk Obrony Terytorialnej;","D) wewnętrznej służby ochrony zarządzającego lotniskiem."],c:[0,1,3]},
+{q:"6. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["A) pracownicy Państwowej Agencji Żeglugi Powietrznej;","B) pracownicy Ministerstwa Infrastruktury;","C) audytorzy Urzędu Lotnictwa Cywilnego;","D) żołnierze Służby Kontrwywiadu Wojskowego."],c:[3]},
+{q:"7. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) substancje zapalające:","B) pistolet","C) amunicję","D) fajerwerki"],c:[0,2,3]},
+{q:"8. Zgodnie z przepisami 10-20% bagażu rejestrowanego poddawanego kontroli bezpieczeństwa z wykorzystaniem urządzenia rentgenowskiego bez zainstalowanego oprogramowania TIP, podlega wyrwkowej kontroli przy użyciu:",a:["A) ETD;","B) PWMW;","C) kontroli manualnej;","D) EDS."],c:[0,1,2,3]},
+{q:"9. W przypadku bagażu rejestrowanego bez właściciela, za czynniki niezależne od pasażera uważa się przypadki, w których",a:["A) pasażer nie stawił się na pokładzie statku powietrznego przed odlotem;","B) pasażer opuścił statek powietrzny przed odlotem;","C) pasażerowi odmówiono wejścia na pokład i nie zrezygnował on dobrowolnie z lotu;","D) pasażerowi odmówiono wejścia na pokład samolotu z winy pasażera."],c:[2]},
+{q:"10. Czy możemy zwolnić pasażerów tranzytowych oraz ich bagaż kabinowy z kontroli bezpieczeństwa:",a:["A) tak, jeżeli pozostają na pokładzie statku powietrznego, nie zawsze poddawani są kontroli bezpieczeństwa nawet po przylocie z państwa UE;","B) nie, zawsze poddawani są kontroli bezpieczeństwa nawet po przylocie z państwa UE;","C) tak, jeżeli przylatują z jednego z państw członkowskich UE;","D) tak, jeżeli przylatują z państwa trzeciego, w którym stosowane są normy ochrony jak w UE."],c:[0,2,3]},
+{q:"11. Do metod kontroli bezpieczeństwa bagażu rejestrowanego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) systemy wykrywania urządzeń wybuchowych;","B) system do wykrywania płynnych materiałów wybuchowych;","C) urządzenie do prześwietlania bagażu;","D) systemy wykrywania materiałów wybuchowych."],c:[3]},
+{q:"12. Do kontroli bezpieczeństwa bagażu rejestrowanego z wykorzystaniem urządzenia ETD pobiera się próbki z:",a:["A) wewnętrznej podszewki bagażu;","B) zewnętrznych kieszeni bagażu;","C) dowolnego dużego przedmiotu znajdującego się wewnątrz bagażu;","D) uchwytów bagażu."],c:[0,2,3]},
+{q:"13. Ze sprawdzenia zwolnione są pojazdy posiadające przepustkę danego portu lotniczego:",a:["A) Państwowej Straży Pożarnej;","B) Agencji Wywiadu;","C) Straży Miejskiej;","D) Lotniskowej służby ratowniczo-gaśniczej."],c:[0,1,3]},
+{q:"14. Do przedmiotów zabronionych dla pasażerów do wnoszenia do strefy zastrzeżonej zaliczamy:",a:["A) Nóż o długości ostrza 6cm","B) Replika bądź imitacja broni palnej","C) zapalniczka","D) łuk"],c:[1,3]},
+{q:"15. Do przedmiotów dozwolonych w bagażu kabinowym zaliczamy:",a:["A) rękawice roboczej","B) antyperspiranty;","C) laptop;","D) aerozol do odstraszania zwierząt."],c:[0,1,2]},
+{q:"16. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["A) funkcjonariusze Służby Więziennej;","B) funkcjonariusz Europejskiej Agencji Straży Granicznej i Przybrzeżnej;","C) żołnierze Żandarmerii Wojskowej.","D) funkcjonariusz Agencji Wywiadu."],c:[1,2,3]},
+{q:"17. Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) ETD;","B) kontrolę manualną;","C) urządzenie rentgenowskie;","D) PWMW."],c:[0,1,2]},
+{q:"18. Za nadzór nad przewożoną bronią palną na lotniskach na których nie funkcjonuje lotnicze przejście graniczne odpowiada:",a:["A) Straż Graniczna;","B) Służba Celno-Skarbowa;","C) Służba Ochrony Lotniska;","D) Policja."],c:[2]},
+{q:"19. Czy możemy zwolnić pasażerów transferowych oraz ich bagaż kabinowy z kontroli bezpieczeństwa:",a:["A) nie zawsze są poddawani kontroli bezpieczeństwa,","B) tak, jeżeli przylatują z jednego z państw członkowskich UE;","C) tak, jeżeli pozostają na pokładzie statku powietrznego,","D) tak, jeżeli przylatują z państwa trzeciego, w którym stosowane są normy ochrony jak w UE."],c:[1,3]},
+{q:"20. Do podstawowych metod kontroli bezpieczeństwa bagażu kabinowego zaliczamy:",a:["A) ETD;","B) RTG;","C) SED;","D) EDS."],c:[1,3]},
+{q:"21. Do kontroli bezpieczeństwa bagażu rejestrowanego z wykorzystaniem urządzenia ETD pobiera się próbki z:",a:["A) zamków błyskawicznych;","B) rączek bagażu;","C) zamknięć danego bagażu;","D) zewnętrznej podszewki bagażu."],c:[0,1,2]},
+{q:"22. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni są posiadający kartę identyfikacyjną portu lotniczego:",a:["A) członkowie Państwowej Agencji Atomistyki;","B) pracownicy Państwowej Agencji Żeglugi Powietrznej;","C) żołnierze Żandarmerii Wojskowej;","D) żołnierze Służby Wywiadu Wojskowego."],c:[2,3]},
+{q:"23. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) proch strzelniczy;","B) dynamit;","C) rewolwer;","D) paralizator."],c:[0,1]},
+{q:"24. Kontroli bezpieczeństwa nie podlegają członkowie oficjalnych delegacji, wymienionych na potwierdzonych listach zaproszonych gości, na zaproszenie:",a:["A) Wiceprezesa Rady Ministrów;","B) Prezesa Rady Ministrów;","C) wicemarszałka Sejmu;","D) marszałka Sejmu Województwa."],c:[0,1]},
+{q:"25. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) fajerwerki;","B) naboje dymne;","C) zapalniki;","D) materiały pirotechniczne."],c:[0,1,2,3]},
+{q:"26. Z kontroli bezpieczeństwa będą zwolnieni/nie będą podlegali pasażerowie którym towarzyszy ochrona służb państwowych:",a:["A) pasażerowie którym towarzyszy ochrona służb państwowych;","B) pracownicy kancelarii Prezesa Rady Ministrów ochraniani przez funkcjonariuszy SOP;","C) kwalifikowani pracownicy ochrony fizycznej wyposażeni w broń palną;","D) żołnierze Żandarmerii Wojskowej w trakcie zapewniania ochrony ministrowi obrony narodowej."],c:[0,1,3]},
+{q:"27. Do kategorii przedmiotów zabronionych w bagażu rejestrowanym zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) TATP;","B) heksogen;","C) amunicję;","D) pentryt."],c:[0,1,2,3]},
+{q:"28. Bagaż rejestrowany uznaje się za zabezpieczony przed nieuprawnioną ingerencją, gdy bagaż:",a:["A) znajduje się w części krytycznej strefy zastrzeżonej;","B) znajduje się w strefie zastrzeżonej;","C) znajduje się w strefie operacyjnej lotniska;","D) znajduje się w strefie ogólnodostępnej"],c:[0]},
+{q:"29. W przypadku bagażu rejestrowanego bez właściciela, za czynniki niezależne od pasażera uważa się przypadki, w których:",a:["A) z powodu nieprzewidzianych okoliczności nie doszło do transferu bagażu z jednego lotu na drugi;","B) pasażer opuścił statek powietrzny przed odlotem;","C) pasażerowi odmówiono wejścia na pokład i zrezygnował on dobrowolnie z lotu;","D) pasażera skierowano na inny lot, a zmiana ta nie nastąpiła na życzenie pasażera."],c:[0,3]},
+{q:"30. Do dodatkowych środków kontroli bezpieczeństwa bagażu kabinowego zaliczamy:",a:["A) kontrolę manualną;","B) HHMD;","C) ETD.","D) urządzenie rentgenowskie;"],c:[2]},
+{q:"31. Do kategorii przedmiotów zabronionych w bagażu kabinowym zaliczamy:",a:["E) rękawice robocze;","F) dynamit;","G) nóż sprężynowy;","H) aerozol do odstraszania zwierząt."],c:[1,2,3]},
+{q:"32. Za zabezpieczony bagaż uznaje się bagaż rejestrowany:",a:["A) fizycznie chroniony przed możliwością wprowadzenia do niego jakichkolwiek przedmiotów;","B) znajdujący się w strefie operacyjnej lotniska;","C) odlatujący po przejściu kontroli bezpieczeństwa;","D) oznaczony przez przewoźnika lotniczego."],c:[0,2]},
+{q:"33. Z kontroli bezpieczeństwa w trakcie wykonywania czynności służbowych zwolnieni jest:",a:["A) inspektor ULC posiadający certyfikat inspektora lotnictwa cywilnego;","B) kwalifikowany pracownik ochrony fizycznej zatrudniony w służbie ochrony lotniska wyposażony w broń palną oraz posiadający kartę identyfikacyjną portu lotniczego;","C) członek Państwowej Komisji Badania Wypadków Lotniczych;","D) funkcjonariusz SG posiadający kartę identyfikacyjną portu lotniczego"],c:[0,1,3]},
+{q:"34. Sprzęt ułatwiający podróżowanie pasażerowi o ograniczonej możliwości poruszania się poddaje się kontroli bezpieczeństwa tak samo jak:",a:["A) bagaż rejestrowany;","B) bagaż kabinowy;","C) przedmioty przenoszone przez osoby niebędące pasażerami;","D) zaopatrzenie portu lotniczego."],c:[1]},
+{q:"35. Do dodatkowych środków kontroli bezpieczeństwa bagażu kabinowego zaliczamy:",a:["A) psa do wykrywania materiałów wybuchowych;","B) ręczny wykrywacz metali;","C) urządzenie do wykrywania śladowych ilości materiałów wybuchowych;","D) urządzenie rentgenowskie."],c:[0,2]},
+{q:"36. Do przedmiotów zabronionych dla pasażerów do wnoszenia do strefy zastrzeżonej zaliczamy:",a:["A) naboje dymne;","B) kije do gry w baseball;","C) śrubokręt o dł. trzonka 5 cm;","D) nóż do cięcia kartonów."],c:[0,1,3]},
+{q:"37. Do podstawowych metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:",a:["A) MDE;","B) RTG;","C) APID+ETD;","D) kontrolę manualną."],c:[1,3]},
+{q:"38. Do dodatkowych środków kontroli bezpieczeństwa pasażerów zaliczamy:",a:["A) urządzenie do prześwietlania osób niewykorzystujące promieniowania jonizującego;","B) urządzenie do wykrywania śladowych ilości materii organicznych;","C) ręczny wykrywacz metali;","D) urządzenie HHMD."],c:[2,3]},
+{q:"39. Do metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:",a:["A) urządzenie do wykrywania metali w rzeczach;","B) pies do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną;","C) SMD;","D) kontrolę manualną."],c:[3]},
+{q:"40. Do metod kontroli bezpieczeństwa bagażu kabinowego zgodnie z Rozp. 2015/1998 zaliczamy:",a:["A) ETD w połączeniu z HHMD;","B) ETD;","C) urządzenie do wykrywania materiałów wybuchowych;","D) urządzenie do wykrywania materiałów wybuchowych w butach."],c:[1]}
+
+];
+
+let mode="learning", pool=[...Array(40).keys()], wrong=[], i=0, selected=[], score=0;
+
+function show(){
+document.getElementById("mode").innerText=mode==="learning"?"TRYB NAUKI":"EGZAMIN";
+let q=Q[pool[i]];
+document.getElementById("question").innerText=q.q;
+let a=document.getElementById("answers"); a.innerHTML=""; selected=[];
+q.a.forEach((t,idx)=>{
+let d=document.createElement("div");
+d.className="answer";
+d.innerText=t;
+d.onclick=()=>{d.classList.toggle("selected"); selected.includes(idx)?selected=selected.filter(x=>x!=idx):selected.push(idx);};
+a.appendChild(d);
+});
+document.getElementById("msg").innerText="";
+}
+
+function check(){
+let q=Q[pool[i]];
+let ok=JSON.stringify([...selected].sort())===JSON.stringify([...q.c].sort());
+let divs=document.querySelectorAll(".answer");
+if(ok){document.getElementById("msg").innerHTML="<span style='color:green'>DOBRZE</span>"; if(mode==="exam")score++;}
+else{document.getElementById("msg").innerHTML="<span style='color:red'>ŹLE</span>"; wrong.push(pool[i]); q.c.forEach(i=>divs[i].classList.add("correct")); selected.forEach(i=>{if(!q.c.includes(i))divs[i].classList.add("wrong");});}
+}
+
+function next(){
+i++;
+if(i>=pool.length){
+if(mode==="learning"){pool=[...new Set(wrong)];wrong=[];i=0;if(pool.length==0){mode="exam";pool=[...Array(40).keys()];score=0;}}
+else{alert("WYNIK: "+score+"/40 = "+Math.round(score/40*100)+"%");return;}
+}
+show();
+}
+show();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

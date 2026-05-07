@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egzamin SG</title>
+
+<style>
+body{
+  margin:0;
+  background:#f2f4f6;
+  font-family:Arial;
+}
+#app,#summary{
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+}
+h2{font-size:22px;}
+#progress{
+  margin-bottom:15px;
+  font-weight:bold;
+  font-size:18px;
+}
+.answer{
+  padding:15px;
+  margin:10px 0;
+  background:#eee;
+  border-radius:10px;
+  font-size:18px;
+}
+.answer.sel{
+  background:#ccc;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  padding:15px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:#1976d2;
+  color:white;
+}
+.good{color:#2e7d32;font-weight:bold;}
+.bad{color:#c62828;font-weight:bold;}
+.hidden{display:none;}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+  <div id="progress"></div>
+  <h2 id="question"></h2>
+  <div id="answers"></div>
+  <div id="feedback"></div>
+  <button id="mainBtn">SPRAWDŹ</button>
+</div>
+
+<div id="summary" class="hidden"></div>
+
+<script>
+const questions = [
+  {q:"1. Co oznacza skrót G7?", a:["grupa 7 najbardziej zadłużonych państw świata;","grupa 7 największych państw Unii Europejskiej;","grupa 7 państw, które tworzą największe i najbardziej rozwinięte gospodarki na świecie;","nieformalne forum spotkań grupy 7 państw NATO;"], c:["C"]},
+  {q:"2. Siedziba Parlamentu Europejskiego znajduje się w:", a:["Strasburgu;","Berlinie;","Paryżu;","Warszawie;"], c:["A"]},
+  {q:"3. Brexit to:", a:["potoczna nazwa procesu opuszczania struktur Unii Europejskiej przez Wielką Brytanię i Holandię zapoczątkowanego przez referendum w czerwcu 2016 roku;","oficjalna nazwa belgijskiego indeksu giełdowego;","potoczna nazwa procesu opuszczania struktur Unii Europejskiej przez Wielką Brytanię zapoczątkowanego przez referendum w czerwcu 2016 roku;","potoczna nazwa procesu opuszczania struktur Unii Europejskiej przez Wielką Brytanię zapoczątkowanego przez referendum w czerwcu 2020 roku;"], c:["C"]},
+  {q:"4. PIT to podatek, który nakłada się na:", a:["osoby prawne;","osoby fizyczne;","organizacje pożytku publicznego;","fundacje;"], c:["B"]},
+  {q:"5. Aktualnie Ministrem Spraw Zagranicznych jest:", a:["Andrzej Domański;","Jacek Czaputowicz;","Radosław Sikorski;","Paulina Hennig-Kloska;"], c:["C"]},
+  {q:"6. Polska przystąpiła do Traktatu Północnoatlantyckiego (NATO):", a:["12 marca 1996 roku;","1 maja 1998 roku;","12 marca 1999 roku;","4 kwietnia 2000 roku;"], c:["C"]},
+  {q:"7. Sekretarzem Generalnym NATO jest:", a:["Jonas Gahr Støre;","Jens Stoltenberg;","gen. Christopher Cavoli;","Mark Rutte;"], c:["D"]},
+  {q:"8. Które państwa należą do grupy G7?", a:["Stany Zjednoczone, Japonia, Niemcy, Wielka Brytania, Francja, Włochy i Kanada;","Stany Zjednoczone, Japonia, Niemcy, Wielka Brytania, Francja, Włochy i Rosja;","Stany Zjednoczone, Japonia, Niemcy, Wielka Brytania, Francja, Włochy i Hiszpania;","Stany Zjednoczone, Japonia, Niemcy, Wielka Brytania, Francja, Włochy i Indie;"], c:["A"]},
+  {q:"9. Członkiem Unii Europejskiej nie jest:", a:["Bośnia i Hercegowina;","Słowenia;","Chorwacja;","Luksemburg;"], c:["A"]},
+  {q:"10. Ile gwiazd widnieje na fladze Unii Europejskiej?", a:["10;","12;","15;","16;"], c:["B"]},
+  {q:"11. Jaki jest tytuł hymnu Unii Europejskiej?", a:["Marsylianka;","Międzynarodówka;","Oda do radości;","Oda do praworządności;"], c:["C"]},
+  {q:"12. Aktualnie Prezesem Rady Ministrów jest:", a:["Bartłomiej Sienkiewicz;","Władysław Kosiniak-Kamysz;","Donald Tusk;","Szymon Hołownia;"], c:["C"]},
+  {q:"13. Ile państw aktualnie należy do Sojuszu Północnoatlantyckiego?", a:["21;","29;","32;","42;"], c:["C"]},
+  {q:"14. Od 2019 roku Komisji Europejskiej przewodniczy:", a:["Manfred Weber;","Angela Merkel;","Ursula von der Leyen;","Kaja Kallas;"], c:["C"]},
+  {q:"15. Amerykańskim odpowiednikiem polskiego Ministerstwa Spraw Zagranicznych jest:", a:["Departament Stanu;","Izba Reprezentantów;","Kongres;","Zgromadzenie Parlamentarne;"], c:["A"]},
+  {q:"16. Główna siedziba NATO znajduje się w:", a:["Nowym Jorku;","Waszyngtonie;","Brukseli;","Paryżu;"], c:["C"]},
+  {q:"17. Aktualnie urzędującym Rzecznikiem Praw Obywatelskich jest:", a:["Andrzej Zoll;","Adam Bodnar;","Marcin Wiącek;","Roman Giertych;"], c:["C"]},
+  {q:"18. Aktualnie prezydentem Ukrainy jest:", a:["Petro Poroszenko;","Wiktor Janukowycz;","Aleksandr Łukaszenka;","Wołodymyr Zełenski;"], c:["D"]},
+  {q:"19. Aktualnie prezydentem Stanów Zjednoczonych jest:", a:["Joe Biden;","Kamala Harris;","Donald Trump;","Barak Obama;"], c:["C"]},
+  {q:"20. Który z poniższych krajów nie należy do NATO?", a:["Czarnogóra;","Albania;","Szwajcaria;","Litwa;"], c:["C"]},
+  {q:"21. Co symbolizuje flaga RP?", a:["czystość i niewinność, odwagę i waleczność;","wiarę i krew;","pamięć, honor i poświęcenie;","męczeństwo i oddanie;"], c:["A"]},
+  {q:"22. Aneksja Krymu i wojna w Donbasie, która rozpoczęła konflikt między Federacją Rosyjską a Ukrainą, miała miejsce w roku:", a:["2012;","2014;","2016;","2022;"], c:["B"]},
+  {q:"23. Inwazja Federacji Rosyjskiej na Ukrainę o charakterze regularnej wojny rozpoczęła się 24 lutego:", a:["2014 r.;","2021 r.;","2022 r.;","2023 r.;"], c:["C"]},
+  {q:"24. Unia Europejska, jako gospodarczo – polityczny związek państw europejskich, liczy obecnie:", a:["25 państw członkowskich;","12 państw członkowskich;","27 państw członkowskich;","31 państw członkowskich;"], c:["C"]},
+  {q:"25. Miejsce kultu wyznawców judaizmu to:", a:["kościół;","meczet;","synagoga;","cerkiew;"], c:["C"]},
+  {q:"26. Zagwarantowanie środkami politycznymi i militarnymi wolności i bezpieczeństwa wszystkim państwom członkowskim jest głównym celem:", a:["Organizacji Traktatu Północnoatlantyckiego (NATO);","Europejskiej Wspólnoty Węgla i Stali (ECSC);","Unii Europejskiej (EU);","Europejskiego Obszaru Gospodarczego (EOG);"], c:["A"]},
+  {q:"27. Wolność myśli, sumienia, religii i przekonań to prawa przynależące do grupy praw:", a:["osobistych;","politycznych;","gospodarczych, socjalnych i kulturalnych;","solidarnościowych;"], c:["A"]},
+  {q:"28. Które z wymienionych państw nie należy do Unii Europejskiej?", a:["Luksemburg;","Szwecja;","Chorwacja;","Szwajcaria;"], c:["D"]},
+  {q:"29. Wrogi stosunek do innych przejawiający się wyższością jednej rasy nad drugą to:", a:["mizoginia;","rasizm;","globalizacja;","ageizm;"], c:["B"]},
+  {q:"30. Dominującą religią w krajach arabskich jest:", a:["islam;","taoizm;","buddyzm;","judaizm;"], c:["A"]},
+  {q:"31. Natychmiastowe przemieszczanie ludności z rejonów uznanych za szczególnie niebezpiecznych do rejonów, w których można zapewnić im bezpieczeństwo to:", a:["emigracja;","ewakuacja;","elokwencja;","ekspatriacja;"], c:["B"]},
+  {q:"32. Utrzymujący się przez dłuższy czas proces wzrostu cen w gospodarce narodowej, połączony z dużą utratą wartości pieniądza to:", a:["inflacja;","dewaluacja;","deflacja;","infrakcja;"], c:["A"]},
+  {q:"33. VAT jest podatkiem płaconym :", a:["od towarów i usług;","tylko przez osoby fizyczne;","tylko przez osoby prawne;","tylko przez osoby kupujące tytoń i alkohol;"], c:["A"]},
+  {q:"34. Czynne prawo wyborcze nie przysługuje osobom:", a:["pozbawionym praw publicznych w wyniku prawomocnego wyroku sądu;","które ukończyły 18 lat;","które mają powyżej 75 roku życia;","z ilorazem inteligencji poniżej statystycznej normy;"], c:["A"]},
+  {q:"35. Kto może zwrócić się do Rzecznika Praw Obywatelskich o pomoc?", a:["wyłącznie osoby pełnoletnie;","obywatele Polski;","każda osoba, niezależnie od obywatelstwa i wieku;","tylko organizacje pozarządowe;"], c:["C"]},
+  {q:"36. W regionie Afryki Północnej położone są:", a:["Portugalia, Hiszpania, Włochy;","Turcja, Jordania, Irak;","Maroko, Algieria, Tunezja;","RPA, Senegal, Nigeria;"], c:["C"]},
+  {q:"37. Państwa posiadające broń jądrową zgodnie z ustaleniami międzynarodowymi w ramach tzw. Non Proliferation Treaty to:", a:["Chiny, USA, Francja, Wielka Brytania, Rosja;","Norwegia, Belgia, Dania, Finlandia, Szwecja;","Chorwacja, Słowacja, Mołdawia, Gruzja, Armenia;","Kazachstan, Turkmenistan, Turcja, Azerbejdżan, Nepal;"], c:["A"]},
+  {q:"38. Oficjalna nazwa państwa Chiny to:", a:["Chińska Republika Ludowo-Demokratyczna;","Chińska Republika Demokratyczna;","Chińska Republika Ludowa;","Socjalistyczna Republika Chin;"], c:["C"]},
+  {q:"39. Które z wymienionych państw nie przyjęły waluty Euro?", a:["Rumunia;","Litwa;","Portugalia;","Słowacja;"], c:["A"]},
+  {q:"40. Grenlandia to terytorium autonomiczne zależne od:", a:["Danii;","Belgii;","Szwecji;","Rosji;"], c:["A"]},
+  {q:"41. Które z poniżej wymienionych miast posiada długowiekową historię i stanowi centralny punkt wiary dla trzech religii monoteistycznych: judaizmu, chrześcijaństwa, islamu:", a:["Dubaj;","Pekin;","Jerozolima;","Teheran;"], c:["C"]},
+  {q:"42. Prawidłowo określone stolice krajów to:", a:["Bruksela – Belgia; Bukareszt – Rumunia; Zagrzeb – Chorwacja;","Madryt – Rumunia; Bukareszt – Belgia; Medjugorje – Chorwacja;","Berlin – Bawaria; Bukareszt – Białoruś; Zagrzeb – Chorwacja;","Paryż – Belgia; Bukareszt – Rumunia; Split – Chorwacja;"], c:["A"]},
+  {q:"43. Największe powierzchniowo państwo na świecie to:", a:["Kanada;","Brazylia;","Rosja;","Indie;"], c:["C"]},
+  {q:"44. Literacką Nagrodę Nobla w 2018 roku otrzymała:", a:["Dorota Masłowska;","Olga Tokarczuk;","Barbara Wysoczańska;","Wisława Szymborska;"], c:["B"]},
+  {q:"45. Maria Skłodowska-Curie otrzymała Nagrodę Nobla w dziedzinie:", a:["chemii;","fizyki;","chemii i fizyki;","geografii;"], c:["C"]},
+  {q:"46. Rzeczpospolita należy do strefy Schengen:", a:["od 2007 r.;","od 2004 r.;","od 2005 r.;","od 2006 r.;"], c:["A"]},
+  {q:"47. Kiedy obchodzone jest w Polsce Święto Flagi?", a:["2 maja;","12 maja;","22 lipca;","11 listopada;"], c:["A"]},
+  {q:"48. Strefa Schengen to obszar:", a:["27 państw;","29 państw;","17 państw;","28 państw;"], c:["A"]},
+  {q:"49. Do Unii Europejskiej nie należy:", a:["Litwa;","Malta;","Andora;","Cypr;"], c:["C"]},
+  {q:"50. Do Unii Europejskiej nie należy:", a:["Litwa;","Łotwa;","Estonia;","Konfederacja Szwajcarska;"], c:["D"]},
+  {q:"51. Do Unii Europejskiej nie należy:", a:["Litwa;","Słowacja;","Estonia;","Norwegia;"], c:["D"]},
+  {q:"52. Członkiem Unii Europejskiej nie jest:", a:["Mołdawia;","Litwa;","Łotwa;","Estonia;"], c:["A"]},
+  {q:"53. Wspólna waluta większości krajów UE to:", a:["euro;","dolar amerykański;","złoty;","marka;"], c:["A"]},
+  {q:"54. Oficjalny status Polski w NATO to:", a:["państwo neutralne;","państwo członkowskie;","państwo obserwator;","państwo wspierające;"], c:["B"]},
+  {q:"55. Skrót NATO oznacza:", a:["National Treaty Organization;","Northern Atlantic Trading Office;","National Atlantic Trade Organization;","North Atlantic Treaty Organization;"], c:["D"]},
+  {q:"56. NATO jest sojuszem:", a:["polityczno-militarnym;","gospodarczym;","ekonomicznym;","Unii Europejskiej;"], c:["A"]},
+  {q:"57. Akt prawny regulujący współpracę krajów w ramach NATO to:", a:["Traktat Waszyngtoński;","Traktat Lizboński;","Traktat Wersalski;","Traktat Amsterdamski;"], c:["A"]},
+  {q:"58. RP przystąpiła do NATO w:", a:["1999 roku;","2004 roku;","1949 roku;","2000 roku;"], c:["A"]},
+  {q:"59. Bułgaria:", a:["należy tylko do Unii Europejskiej;","nie należy do Unii Europejskiej;","należy do Unii Europejskiej i strefy Schengen;","należy do Unii Europejskiej i nie należy do strefy Schengen;"], c:["D"]},
+  {q:"60. Rumunia:", a:["należy tylko do Unii Europejskiej;","nie należy do Unii Europejskiej;","należy do Unii Europejskiej i strefy Schengen;","należy do Unii Europejskiej i nie należy do strefy Schengen;"], c:["D"]},
+  {q:"61. Największe państwo świata pod względem liczby ludności to:", a:["Chiny;","Indie;","Rosja;","Stany Zjednoczone;"], c:["B"]},
+  {q:"62. Najwyższym i najstarszym odznaczeniem państwowym w Polsce jest:", a:["Order Orła Białego;","Virtuti Militari;","Order Odrodzenia Polski;","Order Uśmiechu;"], c:["A"]},
+  {q:"63. Pluralizm polityczny oznacza:", a:["istnienie dwóch lub większej ilości partii politycznych;","istnienie systemu dwupartyjnego;","istnienie centralnego zarządzania;","istnienie systemu autorytarnego;"], c:["A"]},
+  {q:"64. Rzeczpospolita Polska nie graniczy z:", a:["Niemcami;","Czechami;","Słowacją;","Łotwą;"], c:["D"]},
+  {q:"65. Rzeczpospolita Polska nie graniczy z:", a:["Estonią;","Litwą;","Ukrainą;","Słowacją;"], c:["A"]},
+  {q:"66. Rzeczpospolita Polska graniczy z:", a:["5 krajami;","6 krajami;","7 krajami;","8 krajami;"], c:["C"]},
+  {q:"67. Rzeczpospolita Polska graniczy z:", a:["tylko krajami Unii Europejskiej;","tylko krajami spoza Unii Europejskiej;","krajami z Unii Europejskiej i spoza Unii Europejskiej;","krajami Trójkąta Weimarskiego;"], c:["C"]},
+  {q:"68. Sprzedaż towarów wytwarzanych w danym państwie podmiotom zagranicznym to:", a:["eksport;","import;","embargo;","dumping;"], c:["A"]},
+  {q:"69. Miejsce kultu wyznawców islamu to:", a:["kościół;","meczet;","synagoga;","cerkiew;"], c:["B"]},
+  {q:"70. Zgodnie z aktualną treścią hymn państwowy RP rozpoczyna się od słów:", a:["Jeszcze Polska nie zginęła, póki my żyjemy;","Jeszcze Polska nie zginęła, jeśli my żyjemy;","Jeszcze Polska nie zginęła, kiedy my żyjemy;","Jeszcze Polska nie zginęła, jeżeli my żyjemy;"], c:["A"]},
+  {q:"71. Rzeczpospolita Polska weszła do Unii Europejskiej w roku:", a:["2004;","2005;","2007;","2010;"], c:["A"]},
+  {q:"72. Polska ma najdłuższą granicę z:", a:["Niemcami;","Czechami;","Ukrainą;","Słowacją;"], c:["C"]},
+  {q:"73. Najkrótszy odcinek linii granicy państwowej RP to granica z:", a:["Federacją Rosyjską;","Republiką Litewską;","Republiką Białorusi;","Republiką Czeską;"], c:["A"]},
+  {q:"74. Pierwsza premier-kobieta w Polsce to:", a:["Beata Szydło;","Ewa Kopacz;","Hanna Suchocka;","Agata Buzek;"], c:["C"]},
+  {q:"75. W skład tzw. krajów bałtyckich wchodzą:", a:["Dania, Niemcy, Polska;","Dania, Finlandia, Szwecja;","Litwa, Łotwa, Estonia;","Polska, Litwa, Łotwa;"], c:["C"]},
+  {q:"76. Które z wymienionych państw nie jest monarchią?", a:["Słowenia;","Wielka Brytania;","Belgia;","Dania;"], c:["A"]},
+  {q:"77. Języki urzędowe w Belgii to:", a:["francuski, niemiecki, niderlandzki;","francuski, belgijski, angielski;","francuski, angielski, niemiecki;","belgijski, angielski, niderlandzki;"], c:["A"]},
+  {q:"78. Które z niżej wymienionych państw nie należy do inicjatywy Trójmorza?", a:["Estonia;","Rumunia;","Finlandia;","Węgry;"], c:["C"]},
+  {q:"79. Walutą Szwajcarii jest:", a:["euro;","marka szwajcarska;","korona szwajcarska;","frank szwajcarski;"], c:["D"]},
+  {q:"80. Jaka religia dominuje w Turcji?", a:["buddyzm;","hinduizm;","islam;","chrześcijaństwo;"], c:["C"]},
+
+  // Prawo konstytucyjne i administracyjne (81-149)
+  {q:"81. Konstytucja RP została uchwalona przez:", a:["Zgromadzenie Narodowe RP;","Sejm RP;","Senat RP;","Prezydenta RP;"], c:["A"]},
+  {q:"82. Organem odpowiedzialnym za ochronę praw człowieka i obywatela przed naruszeniami ze strony władzy publicznej jest:", a:["Rzecznik Praw Obywatelskich;","Prezes Najwyższej Izby Kontroli;","Rzecznik Praw Konsumenta;","Prezes Trybunału Konstytucyjnego;"], c:["A"]},
+  {q:"83. Jak nazywa się instytucja kontrolująca zgodność ustaw z Konstytucją?", a:["Sąd Najwyższy;","Trybunał Konstytucyjny;","Trybunał Sprawiedliwości UE;","Prokuratura Krajowa;"], c:["B"]},
+  {q:"84. Zgodnie z art. 4 Konstytucji RP władza zwierzchnia w RP należy do:", a:["Sejmu i Senatu;","Prezydenta RP;","organów państwa;","Narodu;"], c:["D"]},
+  {q:"85. Kto zwołuje posiedzenie Rady Ministrów?", a:["Prezes Rady Ministrów;","Prezydent RP;","Marszałek Sejmu;","Marszałek Senatu;"], c:["A"]},
+  {q:"86. Jaki akt prawny określa ustrój RP?", a:["ustawa;","rozporządzenie;","Konstytucja RP;","uchwała Sejmu;"], c:["C"]},
+  {q:"87. Warunkiem wejścia w życie każdej ustawy w RP jest podpisanie jej przez:", a:["Marszałka Sejmu;","Marszałka Senatu;","Premiera;","Prezydenta;"], c:["D"]},
+  {q:"88. Jaką formę ma interpelacja poselska zgodnie z Konstytucją RP?", a:["zaoczną;","pisemną;","telefoniczną;","elektroniczną;"], c:["B"]},
+  {q:"89. Senatorowie w Polsce wybierani są na kadencję:", a:["3-letnią;","4-letnią, chyba że prezydent lub Sejm w określonych warunkach podejmą decyzję o jej skróceniu;","5-letnią, chyba że prezydent lub Sejm w określonych warunkach podejmą decyzję o jej skróceniu;","6-letnią;"], c:["D"]},
+  {q:"90. Czynne prawo wyborcze oznacza:", a:["prawo obywatela do głosowania w wyborach;","prawo obywatela do kandydowania w wyborach;","prawo obywatela do organizowania wyborów;","wszystkie powyższe odpowiedzi są prawidłowe;"], c:["A"]},
+  {q:"91. Prawem przysługującym obywatelom w RP jest:", a:["prawo do uczestniczenia w wyborach i referendum;","prawo do opieki ze strony Rzeczypospolitej Polskiej;","prawo do własności;","wszystkie odpowiedzi są prawidłowe;"], c:["D"]},
+  {q:"92. Klub poselski, zgodnie z regulaminem Sejmu i Senatu, tworzy co najmniej:", a:["15 posłów;","3 posłów;","100 posłów;","360 posłów;"], c:["A"]},
+  {q:"93. Trójpodział władzy oznacza:", a:["podział władzy między Prezydenta, Sejm i Senat;","podział władzy w rządzie;","podział władzy między władzę centralną, samorządową i lokalną;","podział władzy między władzę ustawodawczą, wykonawczą i sądowniczą;"], c:["D"]},
+  {q:"94. Naczelnym organem kontroli państwowej jest:", a:["Sąd Najwyższy;","Sejm RP;","Senat RP;","Najwyższa Izba Kontroli;"], c:["D"]},
+  {q:"95. Sejm i Senat są wybierane na kadencje:", a:["5 letnie;","4 letnie;","3 letnie;","2 letnie;"], c:["B"]},
+  {q:"96. Wybrany do Sejmu może być obywatel polski, mający prawo wybierania, który najpóźniej w dniu wyborów kończy:", a:["30 lat;","21 lat;","25 lat;","26 lat;"], c:["C"]},
+  {q:"97. Jak nazywa się gałąź prawa zajmująca się przestępstwami?", a:["prawo cywilne;","prawo rodzinne;","prawo karne;","prawo administracyjne;"], c:["C"]},
+  {q:"98. Izbą niższą polskiego parlamentu jest:", a:["Sejm;","Senat;","Najwyższa Izba Kontroli;","Trybunał Konstytucyjny;"], c:["A"]},
+  {q:"99. Prezydent RP wybierany jest na kadencję:", a:["4 letnią;","5 letnią;","3 letnią;","6 letnią;"], c:["B"]},
+  {q:"100. Zwierzchnikiem Sił Zbrojnych w Rzeczypospolitej Polskiej jest:", a:["Prezes Rady Ministrów;","Minister Obrony narodowej;","Marszałek Sejmu;","Prezydent RP;"], c:["D"]},
+  {q:"101. Obywatelstwo RP nadawane jest przez:", a:["Prezydenta RP;","ministra;","wojewodę;","burmistrza;"], c:["A"]},
+  {q:"102. Immunitet parlamentarny przysługuje:", a:["policjantowi;","adwokatowi;","sędziemu;","posłowi;"], c:["D"]},
+  {q:"103. Zdolność prawną osoba fizyczna nabywa", a:["z chwilą ukończenia 13 roku życia;","z chwilą ukończenia 16 roku życia;","z chwilą uzyskania pełnoletniości;","z chwilą urodzenia;"], c:["D"]},
+  {q:"104. Władzę ustawodawczą w Rzeczypospolitej Polskiej sprawują:", a:["Sejm;","Senat;","Sejm i Senat;","Sejm, Senat i Prezes Rady Ministrów;"], c:["C"]},
+  {q:"105. Przeciwnikiem powoda w procesie cywilnym jest:", a:["oskarżyciel posiłkowy;","oskarżony;","pozwany;","prokurator;"], c:["C"]},
+  {q:"106. Najwyższym przedstawicielem Rzeczypospolitej Polskiej jest:", a:["Prezydent RP;","Prezes Rady Ministrów;","Marszałek Sejmu;","Marszałek Senatu;"], c:["A"]},
+  {q:"107. Rada ministrów składa się z:", a:["Ministrów;","Prezesa Rady Ministrów i Prezydenta RP;","Prezesa Rady Ministrów i ministrów;","Ministrów i zastępców ministrów;"], c:["C"]},
+  {q:"108. Władzę w Polsce dzielimy na:", a:["ustawodawczą, wykonawczą, sądowniczą;","ustanowioną, wybieraną, sądowniczą;","miejską, powiatową, wojewódzką;","sejmową, ministerialną, wykonawczą;"], c:["A"]},
+  {q:"109. Organem udzielającym wotum zaufania nowo powołanemu premierowi w Polsce jest:", a:["Prezydent;","Sejm;","Senat;","Rada Ministrów;"], c:["B"]},
+  {q:"110. Sejm i Senat obradują na:", a:["naradach;","posiedzeniach;","sympozjach;","konferencjach;"], c:["B"]},
+  {q:"111. Która z poniższych funkcji należy do Prezydenta RP?", a:["uchwalenie budżetu;","powoływanie sędziów;","kontrola konstytucyjności ustaw;","wydawanie ustaw;"], c:["B"]},
+  {q:"112. Zgodnie z Konstytucją RP ochronie niepodległości państwa i niepodzielności jego terytorium oraz zapewnieniu bezpieczeństwa i nienaruszalności jego granic służą:", a:["Siły Zbrojne RP;","Straż Graniczna;","Wojska Obrony Terytorialnej;","Wojsko Polskie;"], c:["A"]},
+  {q:"113. Zgodnie z Konstytucją RP na straży wolności słowa, prawa do informacji oraz interesu publicznego w radiofonii i telewizji stoi:", a:["Krajowa Rada Radiofonii i Telewizji;","Rada Mediów Narodowych;","Rada Programowa;","Rada Ministrów;"], c:["A"]},
+  {q:"114. Wyłączne prawo emisji pieniądza oraz ustalania i realizowania polityki pieniężnej ma:", a:["Rada Ministrów;","Narodowy Bank Polski;","Międzynarodowy Fundusz Walutowy;","Mennica Polska;"], c:["B"]},
+  {q:"115. Zbrodnie przeciwko ludzkości:", a:["są ścigane przez 30 lat;","są ścigane przez 50 lat;","są ścigane przez 100 lat;","nie podlegają przedawnieniu;"], c:["D"]},
+  {q:"116. Władza zwierzchnia w Rzeczypospolitej Polskiej należy do:", a:["Prezydenta Rzeczypospolitej Polskiej;","Narodu;","Rady Ministrów;","Sądów powszechnych;"], c:["B"]},
+  {q:"117. Każdego uważa się za niewinnego dopóki:", a:["nie przyzna się on do popełnienia przestępstwa;","nie przyzna się on do winy;","nie zostanie skazany;","jego wina nie zostanie stwierdzona prawomocnym wyrokiem sądu;"], c:["D"]},
+  {q:"118. Europejski Trybunał Praw Człowieka to:", a:["instytucja Unii Europejskiej odpowiedzialna za rozstrzyganie sporów handlowych;","organ międzynarodowy, który ocenia skargi na naruszenia praw człowieka w krajach członkowskich Rady Europy;","sąd, który rozpatruje skargi obywateli na władze krajowe;","organ ONZ odpowiedzialny za egzekwowanie Powszechnej Deklaracji Praw Człowieka;"], c:["B"]},
+  {q:"119. Zasada uniwersalności praw człowieka oznacza:", a:["prawa człowieka dotyczą tylko obywateli państw demokratycznych;","prawa człowieka to przywileje tylko osób pełnoletnich;","prawa człowieka obowiązują tylko w krajach, które je podpisały;","prawa człowieka są niezbywalne i przysługują każdemu człowiekowi, niezależnie od narodowości, rasy, płci czy religii;"], c:["D"]},
+  {q:"120. Prawa człowieka to:", a:["prawa obywatelskie dotyczące tylko mieszkańców danego państwa;","przepisy dotyczące organizacji politycznych;","zbiór obowiązków wobec obywateli;","zbiór przepisów wynikający z godności ludzkiej, chroniących wolność i prawa każdej osoby;"], c:["D"]},
+  {q:"121. Powszechna Deklaracja Praw Człowieka została przyjęta przez:", a:["ONZ;","Unię Europejską;","Trójkąt Weimarski;","OBWE;"], c:["A"]},
+  {q:"122. Trybunał Konstytucyjny orzeka o:", a:["zgodności ustawy z Konstytucją;","odpowiedzialności karnej w związku z zajmowanym stanowiskiem Prezydenta RP i Prezesa Rady Ministrów;","odpowiedzialności cywilnej członków rządu;","zgodności ustaw z uchwałami Sejmu;"], c:["A"]},
+  {q:"123. Które z poniższych praw nie jest prawem obywatelskim gwarantowanym przez Konstytucję?", a:["prawo do posiadania broni;","prawo do prowadzenia działalności gospodarczej;","prawo do ubezpieczenia zdrowotnego;","prawo do prywatności;"], c:["A"]},
+  {q:"124. Ambasadorów RP mianuje:", a:["Premier RP;","Minister Spraw Zagranicznych RP;","Prezydent RP;","Minister Obrony Narodowej;"], c:["C"]},
+  {q:"125. Ministra powołuje i odwołuje:", a:["Prezes Rady Ministrów;","Marszałek Sejmu;","Prezydent;","Marszałek Senatu;"], c:["A"]},
+  {q:"126. Organem odpowiedzialnym za ochronę praw człowieka i obywatela przed naruszeniami ze strony władzy publicznej jest:", a:["Rzecznik Praw Obywatelskich;","Prezes Najwyższej Izby Kontroli;","Rzecznik Praw Konsumenta;","Prezes Trybunału Konstytucyjnego;"], c:["A"]},
+  {q:"127. Przestępstwo handlu ludźmi zgodnie z kodeksem karnym jest:", a:["uchybieniem;","zbrodnią;","wykroczeniem;","przewinieniem;"], c:["B"]},
+  {q:"128. Kto przedstawia Prezydentowi ustawy do podpisu?", a:["Szef Kancelarii Prezydenta;","Marszałek Senatu;","Marszałek Sejmu;","Doradca Prezydenta RP;"], c:["C"]},
+  {q:"129. Rzecznik Praw Obywatelskich składa sprawozdanie ze swojej działalności do:", a:["Prezydenta RP;","Sejmu RP i Senatu RP;","wyłącznie Senatu RP;","Trybunału Konstytucyjnego;"], c:["B"]},
+  {q:"130. Kto powołuje Rzecznika Praw Obywatelskich?", a:["Prezydent RP;","Sejm RP;","Senat RP;","Rada Ministrów;"], c:["B"]},
+  {q:"131. Obowiązująca aktualnie Polska Konstytucja została uchwalona:", a:["3 maja 1990 r.;","5 kwietnia 1991 r.;","2 kwietnia 1997 r.;","2 kwietnia 1999 r.;"], c:["C"]},
+  {q:"132. Zgodnie z Konstytucją RP Prezydent RP nie ma kompetencji do:", a:["prawa łaski;","zwierzchnictwa nad Siłami Zbrojnymi;","rozwiązywania Sejmu przed upływem jego kadencji z własnej inicjatywy;","zwoływania Rady Gabinetowej;"], c:["C"]},
+  {q:"133. Odpowiedzialność karną za popełnione przestępstwo nabywa się:", a:["w dniu ukończenia 17 lat;","w dniu ukończenia 18 lat;","w dniu ukończenia 21 lat;","w dniu ukończenia 16 lat;"], c:["B"]},
+  {q:"134. Karą za przestępstwo nie jest:", a:["dożywotnie pozbawienie wolności;","pouczenie i nagana;","grzywna;","kara ograniczenia wolności;"], c:["B"]},
+  {q:"135. W Polsce, zgodnie z zasadą precedencji „drugą najważniejszą osobą w państwie\" jest:", a:["Prezes Rady Ministrów;","Marszałek Senatu;","Marszałek Sejmu;","Prezes Trybunału Konstytucyjnego;"], c:["C"]},
+  {q:"136. Ilu parlamentarzystów liczy polski Senat?", a:["460;","200;","100;","55;"], c:["C"]},
+  {q:"137. Zgodnie z Konstytucją Rzeczypospolitej Polskiej Sejm i Senat są wybierane na:", a:["dwuletnie kadencje;","czteroletnie kadencje;","sześcioletnie kadencje;","ośmioletnie kadencje;"], c:["B"]},
+  {q:"138. Zbrodnie ludobójstwa oraz zbrodnie wojenne osądza:", a:["Międzynarodowy Trybunał Praw Człowieka w Strasburgu;","Międzynarodowy Trybunał Karny w Hadze;","Międzynarodowy Trybunał Wojskowy w Norymberdze;","Międzynarodowy Trybunał ds. Zbrodni przeciwko Ludzkości w Brukseli;"], c:["B"]},
+  {q:"139. Minimalny wiek kandydata na prezydenta RP wynosi:", a:["30 lat;","35 lat;","40 lat;","45 lat;"], c:["B"]},
+  {q:"140. Odpowiedzialności za wykroczenie podlega ten, kto ukończył:", a:["17 rok życia;","18 rok życia;","21 rok życia;","wiek sprawcy nie ma znaczenia;"], c:["B"]},
+  {q:"141. Ministra powołuje i odwołuje:", a:["Prezes Rady Ministrów;","Marszałek Sejmu;","Prezydent;","Marszałek Senatu;"], c:["A"]},
+  {q:"142. Prezydent Rzeczypospolitej jest wybierany w wyborach powszechnych przez Naród na kadencję:", a:["4-letnią i może być ponownie wybrany tylko raz;","5-letnią i może być ponownie wybrany tylko raz;","5-letnią i może być ponownie wybrany 2-krotnie;","6-letnią i nie może być ponownie wybrany;"], c:["B"]},
+  {q:"143. Przestępstwa ze względu na rodzaj winy dzielą się na:", a:["umyślne i nieumyślne;","zbrodnie i występki;","ścigane z urzędu i ścigane na wniosek;","administracyjne, gospodarcze i kryminalne;"], c:["A"]},
+  {q:"144. Bierne prawo wyborcze w wyborach do Sejmu RP uzyskuje obywatel w wieku:", a:["19 lat;","21 lat;","35 lat;","40 lat;"], c:["B"]},
+  {q:"145. Klub poselski, zgodnie z regulaminem Sejmu i Senatu, tworzy co najmniej:", a:["15 posłów;","33 posłów;","100 posłów;","260 posłów;"], c:["A"]},
+  {q:"146. Odpowiedzialność za czyny zabronione pod groźbą kary stanowiące przestępstwo, reguluje:", a:["Ustawa z dnia 6 czerwca 1997r. Kodeks karny;","Ustawa z dnia 23 kwietnia 1964r. Kodeks cywilny;","Ustawa z dnia 15 września 2000r. Kodeks spółek handlowych;","Ustawa z dnia 6 kwietnia 1990 r. o Policji;"], c:["A"]},
+  {q:"147. Najwyższa kara stosowana w polskim systemie prawnym to:", a:["kara 25 lat pozbawienia wolności;","kara 30 lat pozbawienia wolności;","dożywotnie pozbawienie wolności;","kara śmierci;"], c:["C"]},
+  {q:"148. Termin wyborów prezydenckich w Polsce ogłasza:", a:["Prezes Rady Ministrów;","Marszałek Senatu;","Marszałek Sejmu;","Prezydent;"], c:["C"]},
+  {q:"149. Rzecznik Praw Obywatelskich RP:", a:["bada zgodność aktów prawnych z konstytucją;","organizuje pikiety wolnościowe;","rozstrzyga spory między obywatelami, które podlegają rozpoznaniu przez sądy;","stoi na straży wolności i praw człowieka;"], c:["D"]},
+
+  // Funkcjonowanie Straży Granicznej i bezpieczeństwo (150-200)
+  {q:"150. Oddziały Straży Granicznej tworzy i znosi:", a:["Komendant Główny Straży Granicznej, w drodze zarządzenia;","minister właściwy do spraw wewnętrznych, w drodze rozporządzenia;","Prezes Rady Ministrów na wniosek ministra właściwego do spraw wewnętrznych, w drodze rozporządzenia;","Prezydent RP;"], c:["B"]},
+  {q:"151. Najmniejsza jednostka samorządu terytorialnego w Polsce to:", a:["dzielnica;","kolonia;","gmina;","powiat;"], c:["C"]},
+  {q:"152. Przedstawicielem Rady Ministrów w województwie jest:", a:["prezydent miasta;","wojewoda;","sejmik samorządowy;","marszałek sejmiku;"], c:["B"]},
+  {q:"153. Wybory do Sejmiku województwa odbywają się co:", a:["4 lata;","5 lat;","3 lata;","nie ma takich wyborów;"], c:["A"]},
+  {q:"154. Burmistrz jest wybierany:", a:["w wyborach ogólnych pośrednich;","w bezpośrednich wyborach powszechnych;","przez radę gminy;","przez radę miasta;"], c:["B"]},
+  {q:"155. Na czele urzędu wojewódzkiego stoi:", a:["dyrektor generalny;","sekretarz wojewody;","wojewoda;","marszałek województwa;"], c:["C"]},
+  {q:"156. Skrót NSA oznacza:", a:["Naczelny Sąd Apelacyjny;","Naczelny Sąd Akredytacyjny;","Naczelny Sąd Administracyjny;","Narodowa Agencja Aeronautyki i Przestrzeni Kosmicznej;"], c:["C"]},
+  {q:"157. Aktualnie w Polsce liczba województw wynosi:", a:["15;","16;","30;","49;"], c:["B"]},
+  {q:"158. Zadaniem Straży Granicznej jest:", a:["nakładanie ceł na przewożone przez granicę towary;","wydawanie wiz i zezwoleń na przekraczanie granicy;","ochrona granicy państwowej w przestrzeni powietrznej;","ściganie sprawców wszystkich przestępstw;"], c:["C"]},
+  {q:"159. Straż Graniczna nie zajmuje się:", a:["ochroną granicy państwowej na lądzie i morzu;","kontrolą ruchu granicznego;","egzekwowaniem podatków;","przeciwdziałaniem nielegalnej migracji;"], c:["C"]},
+  {q:"160. Zadaniem Straży Granicznej jest:", a:["nakładanie ceł na przywożone przez granicę towary;","wydawanie wiz i zezwoleń na przekraczanie granicy;","ochrona granicy państwowej w przestrzeni powietrznej;","ściganie sprawców wszystkich przestępstw;"], c:["C"]},
+  {q:"161. Do przekroczenia granicy państwowej nie uprawnia:", a:["prawo jazdy;","paszport;","dowód osobisty;","książeczka żeglarska;"], c:["A"]},
+  {q:"162. Komendant Główny Straży Granicznej jest centralnym organem administracji rządowej podległym:", a:["ministrowi Obrony Narodowej;","ministrowi właściwemu do spraw wewnętrznych;","ministrowi właściwemu do spraw zagranicznych;","Prezesowi Rady Ministrów;"], c:["B"]},
+  {q:"163. 2 maja obchodzimy w Polsce:", a:["Dzień Zwycięstwa;","Dzień Flagi;","Dzień Strażaka;","Święto Straży Granicznej;"], c:["B"]},
+  {q:"164. Instytucją UE powołaną do koordynacji i wsparcia ochrony granic zewnętrznych UE jest:", a:["Agencja Frontex;","Parlament Europejski;","Straż Graniczna;","Policje państw członkowskich UE;"], c:["A"]},
+  {q:"165. Obszar obejmujący 29 państw, w których zniesiono kontrole graniczne na granicach wewnętrznych, to:", a:["obszar krajów należących do NATO;","Strefa Czystego Transportu;","Strefa Schengen;","Unia Europejska;"], c:["C"]},
+  {q:"166. W dwudziestoleciu międzywojennym ochrona granic Polski realizowana była przez:", a:["Straż Graniczną;","Korpus Ochrony Pogranicza;","Korpus Ochrony Pogranicza i Straż Graniczną;","Wojska Ochrony Pogranicza;"], c:["B"]},
+  {q:"167. Siedziba komendy Bieszczadzkiego Oddziału Straży Granicznej znajduje się w:", a:["Nowym Sączu;","Rzeszowie;","Przemyślu;","Chełmie;"], c:["C"]},
+  {q:"168. Najniższy stopień w Straży Granicznej to:", a:["kapral Straży Granicznej;","szeregowy Straży Granicznej;","plutonowy Straży Granicznej;","referent Straży Granicznej;"], c:["B"]},
+  {q:"169. Komendanta Głównego Straży Granicznej powołuje:", a:["minister właściwy do spraw wewnętrznych;","Prezes Rady Ministrów;","minister właściwy do spraw zagranicznych;","Prezes Rady Ministrów na wniosek ministra właściwego do spraw wewnętrznych;"], c:["A"]},
+  {q:"170. W Straży Granicznej obowiązują następujące korpusy:", a:["korpus szeregowych i oficerów;","korpus szeregowych i podoficerów;","korpus szeregowych i chorążych;","korpus szeregowych, podoficerów, chorążych i oficerów;"], c:["D"]},
+  {q:"171. Obowiązek współdziałania ze Strażą Graniczną dotyczy:", a:["organów administracji rządowej;","jednostek samorządu terytorialnego;","innych jednostek organizacyjnych;","wszystkie odpowiedzi są prawidłowe;"], c:["D"]},
+  {q:"172. Straż Graniczna została utworzona:", a:["ustawą z dnia 12 października 1990 r. o Straży Granicznej;","ustawą oddzielającą Straż Graniczną od Policji;","ustawą z dnia 12 grudnia 1999 r. o Służbie Granicznej;","ustawą z dnia 15 maja 1990 r. o Służbie w Straży Granicznej;"], c:["A"]},
+  {q:"173. Straż Graniczna jest podzielona:", a:["na Oddziały Straży Granicznej;","zgodnie z podziałem administracyjnym Polski;","zgodnie z zaleceniami Premiera;","na powiaty i gminy;"], c:["A"]},
+  {q:"174. Organem właściwym do wydania paszportu jest:", a:["prezydent miasta na prawach powiatu;","burmistrz miasta;","wojewoda;","minister właściwy do spraw wewnętrznych;"], c:["C"]},
+  {q:"175. Zbiór PESEL to:", a:["losowo wybrany numer oznaczający osobę;","kolejny numer określający kobietę lub mężczyznę;","Powszechny System Ewidencji Ludności;","Powszechny Elektroniczny System Ewidencji Ludności;"], c:["C"]},
+  {q:"176. Rzeki, wzdłuż których została wytyczona zachodnia granica Polski z Niemcami to:", a:["Odra i Nysa Łużycka;","Warta i Nysa Łużycka;","Odra i Warta;","Wkra i Bug;"], c:["A"]},
+  {q:"177. Państwa, z którymi Polska posiada granicę lądową to:", a:["Niemcy, Słowenia, Czechy Rosja Litwa, Białoruś, Ukraina;","Niemcy, Szwecja, Czechy, Rosja, Litwa, Białoruś, Ukraina;","Niemcy, Słowacja, Czechy, Rosja, Litwa, Białoruś, Ukraina;","Niemcy, Słowacja, Czechy, Łotwa, Litwa, Białoruś, Ukraina;"], c:["C"]},
+  {q:"178. Do podstawowych zadań Straży Granicznej należy:", a:["ochrona granicy państwowej, kontrola ruchu granicznego, zapobieganie i przeciwdziałanie nielegalnej migracji;","ochrona granicy państwowej w przestrzeni powietrznej;","kontrola celna przepływu towarów przez granicę;","kontrola legalności zatrudnienia obywateli RP;"], c:["A"]},
+  {q:"179. Straż Graniczna to:", a:["jednolita, umundurowana i uzbrojona formacja przeznaczoną do ochrony granicy państwowej;","formacja wojskowa;","formacja jednolita i przymusowa;","formacja paramilitarna;"], c:["A"]},
+  {q:"180. Co oznacza pojęcie „granica zewnętrzna UE”?", a:["granica Polski z Niemcami;","granica państw UE z państwami spoza Unii Europejskiej;","każda granica województwa;","granica miast przygranicznych;"], c:["B"]},
+  {q:"181. Powołana 01 października 2023 roku Wyższa Szkoła Straży Granicznej znajduje się w:", a:["Lubaniu;","Kętrzynie;","Koszalinie;","Warszawie;"], c:["B"]},
+  {q:"182. Siedziba Komendy Głównej Straży Granicznej znajduje się w:", a:["Warszawie;","Gdańsku;","Raciborzu;","Przemyślu;"], c:["A"]},
+  {q:"183. Agencja o nazwie FRONTEX oznacza:", a:["Agencję Bezpieczeństwa Wewnętrznego;","Europejską Agencję Rozwoju;","Europejską Agencję Straży Granicznej i Przybrzeżnej;","organizację non-profit zajmującą się pomocą humanitarną dla nielegalnych migrantów;"], c:["C"]},
+  {q:"184. Podporucznik Straży Granicznej to stopień służbowy należący do korpusu:", a:["szeregowych;","podoficerów;","chorążych;","oficerów;"], c:["D"]},
+  {q:"185. Terenowymi organami Straży Granicznej są:", a:["komendanci oddziałów, placówek i dywizjonów Straży Granicznej;","komendanci ośrodków szkolenia i Wyższej Szkoły Straży Granicznej;","komendanci drogowych i osobowych przejść granicznych;","dowódcy jednostek pływających Straży Granicznej;"], c:["A"]},
+  {q:"186. Straż Graniczna, jako jednolita, umundurowana i uzbrojona formacja została powołana ustawą z dnia:", a:["12 października 1991 r.;","12 października 1990 r.;","16 maja 1991 r.;","31 maja 1995 r.;"], c:["B"]},
+  {q:"187. Nadzór nad działalnością sądów powszechnych i wojskowych w zakresie orzekania sprawuje:", a:["Sąd Najwyższy;","Trybunał Stanu;","Naczelny Sąd Administracyjny;","Prezes NIK;"], c:["A"]},
+  {q:"188. Starosta kieruje:", a:["gminą;","urzędem;","powiatem;","województwem;"], c:["C"]},
+  {q:"189. Osoba, która opuszcza miejsce zamieszkania w celu osiedlenia się w innym kraju to:", a:["uchodźca;","emigrant;","azylant;","imigrant;"], c:["B"]},
+  {q:"190. Kadencja wójta, burmistrza i prezydenta miasta trwa:", a:["5 lat;","4 lata;","6 lat;","3 lata;"], c:["A"]},
+  {q:"191. Straż Graniczna to formacja typu:", a:["wojskowego;","policyjnego;","zmilitaryzowanego;","społecznego;"], c:["B"]},
+  {q:"192. Straż Graniczna jako formacja podlega:", a:["Ministerstwu Obrony Narodowej;","Ministerstwu Spraw Wewnętrznych i Administracji;","Prezesowi Rady Ministrów;","Prezydentowi;"], c:["B"]},
+  {q:"193. Zgodnie z Ustawą o Straży Granicznej, Straż Graniczna to formacja:", a:["jednolita, umundurowana, uzbrojona;","umundurowana, skoszarowana, uzbrojona;","militarna, wyspecjalizowana, zmotoryzowana;","umundurowana, skoszarowana, wyspecjalizowana;"], c:["A"]},
+  {q:"194. Granica rzeczna z Białorusią i Ukrainą przebiega na:", a:["Bugu;","Warcie;","Wiśle;","Odrze;"], c:["A"]},
+  {q:"195. Ministrowi Spraw Wewnętrznych i Administracji podlegają:", a:["Komendant Główny Policji;","Komendant Główny Straży Granicznej;","Komendant Służby Ochrony Państwa;","wszystkie ww. odpowiedzi są prawidłowe;"], c:["D"]},
+  {q:"196. Cudzoziemiec w świetle prawa polskiego, to:", a:["osoba, która nie mieszka w Polsce;","osoba, która przekroczyła granicę danego państwa;","osoba, która nie posiada obywatelstwa polskiego;","osoba, która migruje;"], c:["C"]},
+  {q:"197. Ile oddziałów znajduje się w strukturze Straży Granicznej?", a:["7;","9;","11;","12;"], c:["B"]},
+  {q:"198. W jakich sytuacjach funkcjonariusz Straży Granicznej może użyć środków przymusu bezpośredniego?", a:["tylko na granicy zewnętrznej;","w każdym przypadku nieposłuszeństwa;","w sytuacji zagrożenia zdrowia, życia lub naruszenia porządku prawnego;","tylko za zgodą sądu;"], c:["C"]},
+  {q:"199. Co obejmuje kontrola graniczna?", a:["tylko sprawdzenie paszportu;","ocenę dokumentów, osób i pojazdów przekraczających granicę;","sprawdzanie miejsc zamieszkania cudzoziemców;","weryfikację poziomu języka polskiego;"], c:["B"]},
+  {q:"200. W jaki sposób Straż Graniczna przeciwdziała nielegalnej migracji?", a:["poprzez działania tylko w urzędach;","poprzez wsparcie służb celnych;","poprzez patrole, monitoring granic i kontrole legalności pobytu;","poprzez działania wyłącznie prewencyjne;"], c:["C"]}
+];
+
+// losowa kolejność pytań
+questions.sort(()=>Math.random()-0.5);
+
+let current=0, results=[], selected=[], phase="answer";
+
+const qEl=document.getElementById("question");
+const aEl=document.getElementById("answers");
+const fb=document.getElementById("feedback");
+const btn=document.getElementById("mainBtn");
+const prog=document.getElementById("progress");
+const summary=document.getElementById("summary");
+
+function load(){
+  selected=[];
+  fb.innerHTML="";
+  aEl.innerHTML="";
+  btn.textContent="SPRAWDŹ";
+  phase="answer";
+  prog.textContent=`Pytanie ${current+1} / ${questions.length}`;
+  const q=questions[current];
+  qEl.textContent=q.q;
+  q.a.forEach((t,i)=>{
+    const l=String.fromCharCode(65+i);
+    const d=document.createElement("div");
+    d.className="answer";
+    d.textContent=l+") "+t;
+    d.onclick=()=>toggle(d,l);
+    aEl.appendChild(d);
+  });
+}
+
+function toggle(el,l){
+  if(phase!=="answer") return;
+  if(el.classList.contains("sel")){
+    el.classList.remove("sel");
+    selected=selected.filter(x=>x!==l);
+  }else{
+    el.classList.add("sel");
+    selected.push(l);
+  }
+}
+
+btn.onclick=()=>{
+  const q=questions[current];
+  if(phase==="answer"){
+    const ok=selected.sort().join()===[...q.c].sort().join();
+    results.push({q:q.q,a:q.a,sel:[...selected],cor:q.c});
+    if(ok) fb.innerHTML="<div class='good'>DOBRZE</div>";
+    else{
+      let h="<div class='bad'>ŹLE</div>";
+      q.a.forEach((t,i)=>{
+        const l=String.fromCharCode(65+i);
+        if(q.c.includes(l)) h+=`<div class='good'>${t}</div>`;
+        else if(selected.includes(l)) h+=`<div class='bad'>${t}</div>`;
+      });
+      fb.innerHTML=h;
+    }
+    btn.textContent="NASTĘPNE PYTANIE";
+    phase="feedback";
+  } else {
+    current++;
+    if(current<questions.length) load();
+    else showSummary();
+  }
+}
+
+function showSummary(){
+  document.getElementById("app").style.display="none";
+  let good=0;
+  results.forEach(r=>{if(r.sel.sort().join()==r.cor.sort().join())good++;});
+  let html=`<h2>Wynik: ${(good/results.length*100).toFixed(1)}%</h2>`;
+  results.forEach(r=>{
+    html+=`<p>${r.q}</p>`;
+    r.a.forEach((t,i)=>{
+      const l=String.fromCharCode(65+i);
+      let cls="";
+      if(r.cor.includes(l)) cls="good";
+      else if(r.sel.includes(l)) cls="bad";
+      html+=`<div class='${cls}'>${t}</div>`;
+    });
+  });
+  summary.innerHTML=html;
+  summary.classList.remove("hidden");
+}
+
+load();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

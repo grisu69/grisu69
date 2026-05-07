@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Test szkoleniowy</title>
+<style>
+body { font-family: Arial; background:#f2f2f2; padding:20px; }
+.card { background:#fff; padding:20px; border-radius:8px; max-width:1000px; margin:auto; }
+.answer { padding:8px; margin:5px 0; border:1px solid #ccc; border-radius:5px; cursor:pointer; }
+.answer.selected { background:#cfe3ff; }
+.correct { color:green; font-weight:bold; }
+.wrong { color:red; font-weight:bold; }
+button { margin:10px 5px; padding:10px 20px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2 id="mode">TRYB NAUKI</h2>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="result"></div>
+<button onclick="check()">SPRAWDŹ</button>
+<button onclick="next()">DALEJ</button>
+</div>
+
+<script>
+const questions = [
+{
+q:`1. Do kontroli bezpieczeństwa osób z wykorzystaniem ETD używa się próbek pobranych co najmniej z:`,
+a:[
+"a) wierzchu i spodu dłoni osób i zewnętrznej strony obwodu na wysokości pasa",
+"b) zapięć ich ubrań i z wierzchu butów;",
+"c) przedmiotu osobistego ostatnio dotykanego i zapięć butów;",
+"d) z wierzchu i spodu dłoni osoby i zapięć ich ubrań;"
+],
+ok:["a","b","c"]
+},
+{
+q:`2. W PKB w sytuacji wykrycia noża ukrytego na osobie OKB podaje hasło;`,
+a:["a) awaria urządzenia osoba;","b) zamek osoba;","c) awaria RTG osoba;","d) zamek RTG."],
+ok:["b"]
+},
+{
+q:`3. Do kategorii przedmiotów zabronionych w przedmiotach przenoszonych przez osoby niebędące pasażerami zaliczamy:`,
+a:["a) kubotan;","b) zestaw narzędzi roboczych;","c) proce;","d) szable;"],
+ok:["a","c","d"]
+},
+{
+q:`4. Do dodatkowych środków kontroli bezpieczeństwa bagażu kabinowego zaliczamy:`,
+a:["a) kontrolę manualną;","b) HHMD;","c) ETD;","d) urządzenie rentgenowskie;"],
+ok:["c"]
+},
+{
+q:`5. Do podstawowych metod kontroli bezpieczeństwa przedmiotów przenoszonych przez osoby niebędące pasażerami zaliczamy:`,
+a:["a) MDE;","b) PWMW;","c) SMD;","d) kontrolę manualną;"],
+ok:["d"]
+},
+{
+q:`6. Urządzenie rentgenowskie zgodnie z przepisami posiadają funkcje wzmacniania obrazu takie jak:`,
+a:["a) zdolność co najmniej trzykrotnego zbliżenia dowolnej części obrazu;",
+"b) wzmacnianie krawędzi;",
+"c) wizualne prezentowanie materiałów, do których promienie RTG nie przenikają;",
+"d) inwersja sygnału wideo, tak by umożliwić wyświetlanie obrazu monochromatycznego, na którym biel wyświetla się jako czerń, a czerń wyświetla się jako biel."],
+ok:["b","c","d"]
+},
+{
+q:`7. Do metod kontroli bezpieczeństwa zaopatrzenia pokładowego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) kontrolę manualną;",
+"b) psa do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną;",
+"c) ETD;",
+"d) psa do wykrywania materiałów wybuchowych w połączeniu z kontrolą wzrokową;"],
+ok:["a","d"]
+},
+{
+q:`8. Na czasowej karcie identyfikacyjnej portu lotniczego zgodnie z Rozp. 2015/1998 znajduje się:`,
+a:["a) informacja o strefach, do których posiadacz karty posiada dostęp;",
+"b) oznaczenie kategorii przedmiotów zabronionych;",
+"c) numer karty identyfikacyjnej;",
+"d) data wydania."],
+ok:["a"]
+},
+{
+q:`9. Do metod kontroli bezpieczeństwa poczty przewoźnika lotniczego załadowanej do luku bagażowego statku powietrznego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) kontrolę wzrokową;","b) MDE;","c) PWMW;","d) urządzenie EDS."],
+ok:["a","b","c","d"]
+},
+{
+q:`10. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części niż luk bagażowy statku powietrznego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) kontrolę wzrokową;",
+"b) system do wykrywania materiałów wybuchowych;",
+"c) PWMW w połączeniu z kontrolą manualną;",
+"d) ETD w połączeniu z kontrolą wzrokową;"],
+ok:["b","c"]
+},
+
+/* PYTANIA 11–40 – W PEŁNI, BEZ ZMIAN */
+
+{
+q:`11. Urządzenia rentgenowskie zgodnie z przepisami posiadają funkcje wzmacniania obrazu takie jak:`,
+a:["a) wzmocnienie koloru;",
+"b) zdolność do co najmniej dwukrotnego zbliżenia dowolnej części obrazu;",
+"c) wyświetlania obrazu monochromatycznego;",
+"d) inwersja sygnału wideo tak, by umożliwić wyświetlanie obrazu monochromatycznego, na którym biel jest wyświetlana jako biel a czerń wyświetla się jako czerń;"],
+ok:["b"]
+},
+{
+q:`12. W ramach testu RTG „rozdzielczości przestrzennej” obraz wyświetlany na ekranie RTG umożliwia OKB zobaczenie:`,
+a:["a) kratki z blachy aluminiowej o grubości 2 mm (szczeliny o szerokości 2,0 mm w odstępach 4,0 mm), ze szczelinami równoległymi i prostopadłymi do kierunku przemieszczania się taśmociągu;",
+"b) kratki z blachy miedzianej o grubości 2,0 mm (szczeliny o szerokości 2,0 mm w odstępach 4,0 mm), ze szczelinami równoległymi i prostopadłymi do kierunku przemieszczania się taśmociągu;",
+"c) kratki z blachy  aluminiowej o grubości 4,0 mm (szczeliny o szerokości 4,0 mm w odstępach 24,0 mm), ze szczelinami równoległymi i prostopadłymi do kierunku przemieszczania się taśmociągu;",
+"d) kratki z blachy miedzianej o grubości 4,0 mm (szczeliny o szerokości 4,0 mm w odstępach 2,0 mm), ze szczelinami równoległymi i prostopadłymi do kierunku przemieszczania się taśmociągu;"],
+ok:["b"]
+},
+{
+q:`13. W ramach testu RTG „zwykłej penetracji dla cienkich materiałów” obraz wyświetlany na ekranie RTG umożliwia OKB zobaczenie:`,
+a:["a) płytki ze stali o grubości 1mm;",
+"b) ołowianego pręta o grubości 1,5 mm za osłoną ze stali o grubości 26 mm;",
+"c) płytki ze stali o grubości 0,1 mm;",
+"d) ołowianego pręta o grubości 1,5 cm za osłoną ze stali o grubości 26mm;"],
+ok:["c"]
+},
+{
+q:`14. Do metod kontroli bezpieczeństwa poczty przewoźnika lotniczego załadowanej do luku bagażowego towarowego SP zaliczamy:`,
+a:["a) kontrolę manualną;","b) kontrolę wzrokową;","c) MED;","d) urządzenia EDS;"],
+ok:["a","b","d"]
+},
+{
+q:`15. Zaopatrzenie pokładowe uznaje się za zabezpieczone przed nieupoważnioną ingerencją gdy:`,
+a:["a) znajduje się w części krytycznej strefy zastrzeżonej;",
+"b) znajduje się w strefie zastrzeżonej;",
+"c) znajduje się w strefie operacyjnej lotniska;",
+"d) znajduje się na pokładzie samolotu w części krytycznej strefy zastrzeżonej;"],
+ok:["a","d"]
+},
+{
+q:`16. Do metod kontroli bezpieczeństwa poczty przewoźnika lotniczego załadowanej do luku bagażowego statku powietrznego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) HHMD;","b) psy do wykrywania materiałów wybuchowych;","c) PWMW;","d) SED;"],
+ok:["b","c"]
+},
+{
+q:`17. W PKB w sytuacji wykrycia w bagażu kabinowym broni palnej OKB podaje hasło:`,
+a:["a) zamek awaria;","b) zamek RTG;","c) zamek osoba;","d) zamek;"],
+ok:["b"]
+},
+{
+q:`18. W ramach testu RTG „zwykłej penetracji dla grubych materiałów obraz wyświetlany na ekranie urządzenia RTG umożliwia OKB zobaczenie:`,
+a:["a) płytki ze stali o grubości 1 mm;",
+"b) ołowianego pręta o grubości 1,5 mm za osłoną ze stali o grubości 26 mm;",
+"c) płytki ze stali o grubości 0,1 mm;",
+"d) ołowianego pręta o grubości 1,5 cm za osłoną ze stali o grubości 26mm;"],
+ok:["b"]
+},
+{
+q:`19. Przedmiotami zabronionymi w zaopatrzeniu pokładowym są:`,
+a:["a) materiały udostępniane pasażerom podczas lotu;",
+"b) neutralizujące substancje chemiczne;",
+"c) urządzenia do wystrzeliwania gwoździ;",
+"d) koce oraz poduszki;"],
+ok:["b"]
+},
+{
+q:`20. Do metod kontroli bezpieczeństwa zaopatrzenia portu lotniczego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) psa do wykrywania materiałów wybuchowych;",
+"b) psa do wykrywania urządzeń wybuchowych;",
+"c) psa do wykrywania materiałów wybuchowych w połączeniu z kontrolą wzrokową;",
+"d) MDE;"],
+ok:["c"]
+},
+{
+q:`21. W ramach testu RTG „użytecznej penetracji” obraz wyświetlany na ekranie urządzenia RTG umożliwia OKB zobaczenie:`,
+a:["a) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,254 cm ułożony na polimetakrylanie metylu (PMMA np. szkło akrylowe, pleksiglas);",
+"b) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,5105 cm za osłoną aluminiową o grubości 11,1 cm;",
+"c) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,254 mm ułożony na polimetakrylanie metylu (PMMA np. szkło akrylowe, pleksiglas);",
+"d) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,5105 mm za osłoną aluminiową o grubości 11,1 mm"],
+ok:["d"]
+},
+{
+q:`22. W PKB w sytuacji wykrycia w bagażu kabinowym urządzenia wybuchowego OKB podaje hasło:`,
+a:["a) awaria urządzenia RTG;",
+"b) zamek RTG;",
+"c) zamek osoba;",
+"d) awaria RTG;"],
+ok:["a"]
+},
+{
+q:`23. Zaopatrzenie pokładowe oznacza:`,
+a:["a) artykuły przeznaczone do użycia w dowolnym celu w strefie zastrzeżonej;",
+"b) przedmioty przeznaczone na pokład SP w celu spożycia przez załogę lub pasażerów;",
+"c) przedmioty przewożone przez osoby inne niż pasażerowie;",
+"d) bagaż kabinowy oraz bagaż rejestrowany;"],
+ok:["b"]
+},
+{
+q:`24. do metod kontroli bezpieczeństwa poczty przewoźnika lotniczego załadowanej do luku bagażowego SP zaliczamy:`,
+a:["a) psy do wykrywania materiałów wybuchowych w połączeniu z kontrolą manualną;",
+"b) systemy EDS;",
+"c) urządzenia EDS;",
+"d) urządzeń wykrywających substancje;"],
+ok:["b","c"]
+},
+{
+q:`25. Przedmiotami zabronionym w zaopatrzeniu portu lotniczego są:`,
+a:["a) kubotany;",
+"b) sekatory z ostrym ostrzem;",
+"c) urządzenia do wstrzeliwania gwoździ;",
+"d) maczety;"],
+ok:["a","d"]
+},
+{
+q:`26. Do metod kontroli bezpieczeństwa zaopatrzenia portu lotniczego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) system ETD;",
+"b) ETD w połączeniu z kontrolą manualną;",
+"c) ETD w połączeniu z z kontrolą wzrokową;",
+"d) PWMW;"],
+ok:["c"]
+},
+{
+q:`27. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części niż luk bagażowy SP zaliczamy:`,
+a:["a) kontrolę manualną;",
+"b) urządzenia rentgenowskie;",
+"c) systemy EDS;",
+"d) PWMW;"],
+ok:["a","b","c"]
+},
+{
+q:`28. Do metod kontroli bezpieczeństwa zaopatrzenia pokładowego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) MDE;",
+"b) ETD w połączeniu z kontrolą wzrokową;",
+"c) kontrolę manualną;",
+"d) PWMW w połączeniu z kontrolą wzrokową."],
+ok:["b","c","d"]
+},
+{
+q:`29. Zaopatrzenie portu lotniczego może zostać zwolnione z kontroli bezpieczeństwa w przypadku:`,
+a:["a) nie podlega zwolnieniu, zawsze podlega kontroli bezpieczeństwa;",
+"b) części zamiennych do statków powietrznych, którym towarzyszy odpowiednia dokumentacja;",
+"c) gdy przybywa do strefy zastrzeżonej lotniska na pokładzie samolotu;",
+"d) gdy przybywa do strefy zastrzeżonej na pokładzie statku kosmicznego."],
+ok:["b","c"]
+},
+{
+q:`30. W PKB w sytuacji wykrycia urządzenia wybuchowego na osobie OKB podaje hasło:`,
+a:["a) awaria urządzenia osoba;",
+"b) awaria osoba;",
+"c) zamek osoba;",
+"d) zamek."],
+ok:["a"]
+},
+{
+q:`31. Kategorie przedmiotów zabronionych w zaopatrzeniu portu lotniczego to:`,
+a:["a) narzędzia robocze;",
+"b) przedmioty z ostrym zakończeniem;",
+"c) przedmioty z ostrą krawędzią;",
+"d) substancje zapalające."],
+ok:["d"]
+},
+{
+q:`32. W PKB w sytuacji wykrycia przedmiotu zabronionego (innego niż broń palna lub urządzenie wybuchowe) ukrytego na osobie OKB podaje hasło:`,
+a:["a) awaria urządzenia osoba;",
+"b) awaria osoba;",
+"c) zamek osoba;",
+"d) zamek."],
+ok:["c"]
+},
+{
+q:`33. Wykaz przedmiotów zabronionych do wnoszenia dla osób niebędących pasażerami do strefy zastrzeżonej znajdziemy w:`,
+a:["a) dodatku 4-A Rozp. 2015/2015;",
+"b) dodatku 4-B Rozp. 2015/2015;",
+"c) dodatku 1-A Rozp. 2015/1998;",
+"d) dodatku 4-C Rozp. 2015/1998;"],
+ok:["c"]
+},
+{
+q:`34. W PKB w sytuacji wykrycia broni palnej na osobie OKB podaje hasło:`,
+a:["a) osoba zamek;",
+"b) awaria zamek;",
+"c) zamek awaria;",
+"d) zamek osoba."],
+ok:["d"]
+},
+{
+q:`35. Do metod kontroli bezpieczeństwa zaopatrzenia portu lotniczego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) psa do wykrywania urządzeń wybuchowych;",
+"b) urządzenie EDS;",
+"c) ETD;",
+"d) system do wykrywania urządzeń wybuchowych."],
+ok:["b"]
+},
+{
+q:`36. Do metod kontroli bezpieczeństwa poczty przewoźnika lotniczego załadowanej do luku bagażowego SP zaliczamy:`,
+a:["a) urządzenia rentgenowskie;",
+"b) bramki do wykrywania metali;",
+"c) urządzenia do wykrywania śladowych ilości materiałów wybuchowych;",
+"d) urządzenia do wykrywania oparów materiałów wybuchowych."],
+ok:["a","c","d"]
+},
+{
+q:`37. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części niż luk bagażowy statku powietrznego zgodnie z Rozp. 2015/1998 zaliczamy:`,
+a:["a) system do wykrywania materiałów wybuchowych;",
+"b) ETD w połączeniu z kontrolą wzrokową;",
+"c) ETD;",
+"d) MDE."],
+ok:["a","c"]
+},
+{
+q:`38. Zaopatrzenie portu lotniczego uznaje się za zabezpieczone przed nieupoważnioną ingerencją jeżeli:`,
+a:["a) znajduje się w części krytycznej strefy zastrzeżonej;",
+"b) znajduje się w strefie zastrzeżonej;",
+"c) znajduje się w strefie operacyjnej lotniska;",
+"d) jest pozostawione w magazynie w części krytycznej strefy zastrzeżonej."],
+ok:["a","d"]
+},
+{
+q:`39. Do metod kontroli bezpieczeństwa poczty i materiałów przewoźnika lotniczego załadowanych do innej części niż luk bagażowy SP zaliczamy:`,
+a:["a) VCK;",
+"b) EDS;",
+"c) EVD;",
+"d) ETD."],
+ok:["b","d"]
+},
+{
+q:`40. W ramach testu RTG „rozdzielczości pojedynczego przewodu” obraz wyświetlany na ekranie urządzenia RTG umożliwia OKB zobaczenie:`,
+a:["a) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,254 cm ułożony na polimetakrylanie metylu (PMMA np. szkło akrylowe, pleksiglas);",
+"b) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,5105 cm za osłoną aluminiową o grubości 11,1 cm;",
+"c) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,254 mm ułożony na polimetakrylanie metylu (PMMA np. szkło akrylowe, pleksiglas);",
+"d) miedzianego ocynowanego drutu nieizolowanego o średnicy 0,5105 mm za osłoną aluminiową o grubości 11,1 mm."],
+ok:["c"]
+}
+];
+
+let index = 0;
+let wrong = [];
+
+function load(){
+document.getElementById("question").innerText = questions[index].q;
+let html="";
+questions[index].a.forEach((t,i)=>{
+html += `<div class="answer" onclick="toggle(this)" data-val="${['a','b','c','d'][i]}">${t}</div>`;
+});
+document.getElementById("answers").innerHTML = html;
+document.getElementById("result").innerHTML = "";
+}
+
+function toggle(el){
+el.classList.toggle("selected");
+}
+
+function check(){
+let sel = [...document.querySelectorAll(".selected")].map(e=>e.dataset.val).sort();
+let ok = [...questions[index].ok].sort();
+let r = document.getElementById("result");
+if(JSON.stringify(sel) === JSON.stringify(ok)){
+r.innerHTML = "<span class='correct'>DOBRZE</span>";
+}else{
+r.innerHTML = "<span class='wrong'>ŹLE</span><br>Poprawne: " + ok.join(", ");
+if(!wrong.includes(index)) wrong.push(index);
+}
+}
+
+function next(){
+index++;
+if(index >= questions.length){
+if(wrong.length > 0){
+alert("Powtarzamy błędne pytania");
+questions.splice(0, questions.length, ...wrong.map(i => questions[i]));
+wrong = [];
+index = 0;
+}else{
+alert("KONIEC TESTU – WSZYSTKO ZALICZONE");
+index = 0;
+}
+}
+load();
+}
+
+load();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>

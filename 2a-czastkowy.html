@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Egzamin – Ochrona Lotnictwa</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+*{
+box-sizing:border-box;
+-webkit-tap-highlight-color: transparent;
+}
+
+body{
+font-family:Arial;
+background:#f0f2f5;
+margin:0;
+padding:10px;
+}
+
+#app{
+background:white;
+padding:15px;
+max-width:700px;
+margin:auto;
+border-radius:12px;
+box-shadow:0 0 15px rgba(0,0,0,.1);
+}
+
+h2{
+text-align:center;
+margin-top:5px;
+}
+
+h3{
+font-size:18px;
+line-height:1.4;
+}
+
+.answer{
+border:2px solid #ccc;
+padding:14px;
+margin:10px 0;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+background:white;
+}
+
+.answer.selected{
+background:#dbe9ff;
+border-color:#3b82f6;
+}
+
+.answer.correct{
+background:#c7f3c7;
+border-color:#16a34a;
+}
+
+.answer.wrong{
+background:#ffd0d0;
+border-color:#dc2626;
+}
+
+#status{
+font-size:22px;
+font-weight:bold;
+text-align:center;
+margin:15px 0;
+}
+
+.green{color:#16a34a}
+.red{color:#dc2626}
+
+button{
+width:100%;
+padding:15px;
+font-size:18px;
+margin-top:12px;
+border:none;
+border-radius:10px;
+background:#2563eb;
+color:white;
+}
+
+button:active{
+transform:scale(0.98);
+}
+
+#nextBtn{
+background:#16a34a;
+}
+
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div id="app">
+<h2 id="phase">Tryb nauki</h2>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="status"></div>
+<button id="checkBtn">SPRAWDŹ</button>
+<button id="nextBtn" class="hidden">DALEJ</button>
+</div>
+
+<script>
+const allQuestions = [
+{
+q:"1/1) Do metod kontroli bezpieczeństwa pasażerów zgodnie z rozp. 2015/1998 zaliczamy:",
+a:["Kontrolę wzrokową ;","Urządzenie do wykrywania metalu ;","Ręczny wykrywacz metalu ;","Urządzenie do wykrywania materiałów wybuchowych w butach"],
+c:[3]
+},
+{
+q:"2/2) Do metod kontroli bezpieczeństwa osób niebędących pasażerami zaliczamy :",
+a:["Urządzenie do prześwietlania osób nie wykorzystujące promieniowania jonizującego ;","PWMW;","ETD;","HHMD"],
+c:[0,1,2]
+},
+{
+q:"3/7) Do podstawowych metod kontroli bezpieczeństwa osób niebędących pasażerami zaliczamy",
+a:["Kontrolę wzrokową","Urządzenie do wykrywania metalu ;","Ręczny wykrywacz metalu ;","Bramkę do wykrywania metali ;"],
+c:[3]
+},
+{
+q:"4/8) Do dodatkowych środków kontroli bezpieczeństwa osób niebędących pasażerami zaliczamy :",
+a:["System do prześwietlania osób","Psa do wykrywania materiałów wybuchowych ;","Urządzenie do wykrywania metalu w butach ;","System do wykrywania płynnych materiałów wybuchowych ;"],
+c:[1,2]
+},
+{
+q:"5/9) Do kontroli bezpieczeństwa osób z wykorzystaniem ETD używa się próbek pobranych co najmniej z:",
+a:["Wierzchu i spodu dłoni osób i zapięć butów ;","Zapięć ich ubrań oraz wierzchu i spodu dłoni ;","Przedmiotu osobistego ostatnio dotyka mego i z wierzchu butów ;","Z wierzchu dłoni osób i wewnętrznego obwodu na wysokości pasa"],
+c:[0,2]
+},
+{
+q:"6/10) Jeżeli WTMD reaguje sygnałem alarmowym podczas przejścia pasażera to przyczynę alarmu ustala się poddając pasażera:",
+a:["Kontroli wzrokowej zgodnie z dodatkiem 4-A;","Kontroli bezpieczeństwa z użyciem ETD;","Kontroli bezpieczeństwa z użyciem PWMW;","Kontroli manualnej z godnie z dodatkiem 4-A"],
+c:[3]
+},
+{
+q:"7/11) Wykaz przedmiotów zabronionych do wnoszenia dla pasażerów do strefy zastrzeżonej znajdziemy w:",
+a:["dodatku 1-A Rozp. 2015/1998;","dodatku 4-A Rozp. 2015/1998;","dodatku 4-B Rozp. 2015/1998;","dodatku 4-C Rozp. 2015/1998;"],
+c:[3]
+},
+{
+q:"8/12) Do przedmiotów zabronionych dla pasażerów do wnoszenia do strefy zastrzeżonej zaliczamy:",
+a:["Nóż o długości ostrza 6 cm ;","Celownik teleskopowy ;","Lampa lutownicza ;","Spłonka ;"],
+c:[2,3]
+},
+{
+q:"9/13) Do przedmiotów zabronionych dla pasażerów do wnoszenia do strefy zastrzeżonej zaliczamy :",
+a:["Naboje dymne ;","Kije do gry w baseball;","Śrubokręt o długości trzonka 7 cm;","Nóż do cięcia kartonów"],
+c:[0,1,2,3]
+},
+{
+q:"10/14) Do przedmiotów zabronionych dla osób niebędących pasażerami do wnoszenia do strefy zastrzeżonej zaliczamy",
+a:["Celowniki teleskopowe;","Narzędzia robocze;","Substancje zapalające;","Urządzenia do ogłuszania"],
+c:[2,3]
+},
+{
+q:"11/23) Do kontroli bezpieczeństwa osób z wykorzystaniem ETD używa się próbek pobranych co najmniej z:",
+a:["wierzchu i spodu dłoni osób i zewnętrznej strony obwodu na wysokości pasa;","zapięć ich ubrań i wierzchu ich butów;","przedmiotu osobistego ostatnio dotykanego i zapięć butów;","z wierzchu i spodu dłoni osób i zapięć ich ubrań;"],
+c:[0,1,2]
+},
+{
+q:"12/24) Do przedmiotów zabronionych dla osób niebędących pasażerami do wnoszenia do strefy zastrzeżonej zaliczany :",
+a:["Nożyczki o długości ostrza 9 cm ;","Ostrza do maszynek do golenia;","Wiertarka","Kajdanki"],
+c:[3]
+},
+{
+q:"13/28) Odsetek od 10% do 20% pasażerów którzy nie uruchomili alarmu przechodząc przez WTMD poddaje się kontroli bezpieczeństwa za pomocą:",
+a:["PWMW;","ETD+SMD","kontrola manualna","Kontrola manualna + SMD"],
+c:[0,2]
+},
+{
+q:"14/19) Do dodatkowych środków kontroli bezpieczeństwa pasażerów zaliczamy :",
+a:["Urządzenie do prześwietlania osób niewykorzystujące promieniowania jonizującego ;","PWMW;","ETD;","HHMD;"],
+c:[1,2,3]
+},
+{
+q:"15/3) Jeżeli podczas kontroli bezpieczeństwa pasażera WTMD reaguje alarmem a przyczynę alarmu ustalono z użyciem WTMD to:",
+a:["Do 10% tak skontrolowanych pasażerów należy poddać kontroli manualnej;","Od 10% do 20% tak skontrolowanych pasażerów należy poddać kontroli manualnej ;","Od 10% do 20% tak skontrolowanych pasażerów należy poddać kontroli bezpieczeństwa przy zastosowaniu HHMD;","Od 10% do 20 proc tak skontrolowanych pasażerów należy poddać kontroli ETD;"],
+c:[1,3]
+},
+{
+q:"16/5) Jeżeli urządzenie do prześwietlania osób nie wykorzystujące promieniowania jonizującego reaguje sygnałem alarmowym przyczynę alarmu można ustalić poddając osobę :",
+a:["Kontroli bezpieczeństwa z wykorzystaniem ETD ;","Ponownej kontroli bezpieczeństwa z wykorzystaniem urządzenia do prześwietlenia osób nie wykorzystującego promieniowania jonizującego ;","Kontroli manualnej zgodnie z dodatkiem 4–A;","Ukierunkowanej kontroli manualnej"],
+c:[1,2,3]
+},
+{
+q:"17/6) Do metod kontroli bezpieczeństwa osób niebędących pasażerami zgodnie z Rozp. 2015/1998  zaliczamy:",
+a:["Kontrolę manualną ;","Urządzenie do wykrywania metalu ;","Ręczny wykrywacz metalu ;","Urządzenie do wykrywania metalu w butach"],
+c:[0,3]
+},
+{
+q:"18/29) Wykaz przedmiotów zabronionych do wnoszenia dla osób niebędących pasażerami do strefy zastrzeżonej znajdziemy w :",
+a:["dodatku 1-A Rozp 2015/1998;","dodatku 1-A Rozp 2015/2015;","dodatku 4-B Rozp 2015/2015;","dodatku 4-C Rozp 2015/1998;"],
+c:[0]
+},
+{
+q:"19/30) Podczas kontroli bezpieczeństwa ETD w połączeniu z HHMD można zastosować:",
+a:["na prośbę pasażera;","Gdy kontrola manualna jest nieskuteczna ;","Gdy kontrola manualna jest niepożądana ze względów zdrowotnych ;","do skontrolowania opatrunków gipsowych"],
+c:[1,2,3]
+},
+{
+q:"20/15) Do metod kontroli bezpieczeństwa pasażerów zgodnie z Rozp. 2015/1998 zaliczamy:",
+a:["Kontrolę manualną ;","WTMD;","ETD w połączeniu z HHMD","SED"],
+c:[0,1,2,3]
+},
+
+];
+
+let queue=[...allQuestions], wrong=[], idx=0, phase="learning", examStats=[];
+
+function show(){
+document.getElementById("phase").innerText = phase==="learning"?"Tryb nauki":"Egzamin końcowy";
+document.getElementById("status").innerHTML="";
+document.getElementById("nextBtn").classList.add("hidden");
+const q=queue[idx];
+document.getElementById("question").innerText=q.q;
+const a=document.getElementById("answers"); a.innerHTML="";
+q.a.forEach((t,i)=>{
+let d=document.createElement("div");
+d.className="answer";
+d.innerText=String.fromCharCode(65+i)+") "+t;
+d.onclick=()=>d.classList.toggle("selected");
+a.appendChild(d);
+});
+}
+
+document.getElementById("checkBtn").onclick=()=>{
+const q=queue[idx];
+const answers=[...document.querySelectorAll(".answer")];
+const selected=answers.map((d,i)=>d.classList.contains("selected")?i:null).filter(i=>i!==null);
+const status=document.getElementById("status");
+let ok=JSON.stringify(selected.sort())===JSON.stringify(q.c.sort());
+
+if(phase==="final"){
+examStats.push({q:q.q,sel:selected.map(i=>String.fromCharCode(65+i)),cor:q.c.map(i=>String.fromCharCode(65+i)),ok});
+}
+
+if(ok){
+status.innerHTML="<span class='green'>DOBRZE</span>";
+}else{
+status.innerHTML="<span class='red'>ŹLE</span>";
+wrong.push(q);
+answers.forEach((d,i)=>{
+if(q.c.includes(i)) d.classList.add("correct");
+if(selected.includes(i)&&!q.c.includes(i)) d.classList.add("wrong");
+});
+}
+document.getElementById("nextBtn").classList.remove("hidden");
+};
+
+document.getElementById("nextBtn").onclick=()=>{
+idx++;
+if(idx>=queue.length){
+if(phase==="learning" && wrong.length){
+queue=[...wrong]; wrong=[]; idx=0; alert("Tryb powtórek – tylko błędy"); show(); return;
+}
+if(phase==="learning"){
+phase="final"; queue=[...allQuestions]; idx=0; examStats=[]; alert("Przechodzisz do egzaminu końcowego"); show(); return;
+}
+
+let m=examStats.filter(x=>!x.ok);
+let txt=`WYNIK EGZAMINU\n\nPoprawne: ${examStats.length-m.length}/${examStats.length}\nBłędy: ${m.length}\n\n`;
+m.forEach((x,i)=>txt+=`${i+1}. ${x.q}\nTwoja: ${x.sel.join(", ")}\nPoprawna: ${x.cor.join(", ")}\n\n`);
+alert(txt);
+return;
+}
+show();
+};
+
+show();
+</script>
+<a href="../index.html">⬅ Powrót do listy testów</a>
+
+</body>
+</html>
